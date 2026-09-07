@@ -7,4 +7,5 @@ kernel/kernel
 # Local editor and OS files
 .DS_Store
 .vscode/
-
+__pycache__/
+*.pyc
