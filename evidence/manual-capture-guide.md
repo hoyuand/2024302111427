@@ -55,7 +55,7 @@ evidence/handdrawn/03-timer-interrupt-journey.jpg
 2. 执行：
 
 ```bash
-cd ~/os实践A-杜浩源-2024302111427
+cd /mnt/c/Users/27226/Documents/ChatGPT/OS实践
 python3 tools/preflight.py
 ```
 
@@ -79,7 +79,7 @@ git remote -v
 ## 五 获取 GitHub 仓库截图
 
 1. 浏览器打开本项目 GitHub 页面。
-2. 页面上方应清晰显示仓库名 `os实践A-杜浩源-2024302111427`。
+2. 页面上方应清晰显示仓库名 `os-A---2024302111427`，右侧 About 区域应显示课程项目全称 `os实践A-杜浩源-2024302111427`。GitHub 会从仓库名中移除中文字符，这是平台限制。
 3. 文件列表应能看到 `figures`、`notes`、`evidence` 和 `kernel`。
 4. 打开仓库的 Tags 页面，确认 `lab0` 存在。
 5. 分别截图仓库首页和 Tags 页面，保存为：
@@ -102,4 +102,3 @@ git push origin lab0 --force
 ```
 
 这里移动 `lab0` 标签是因为证据文件是在初次提交后由本人补入；最终标签必须指向包含完整证据的提交。
-
