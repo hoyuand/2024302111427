@@ -1,0 +1,10 @@
+# Build outputs
+kernel/*.o
+kernel/*.d
+kernel/kernel
+*.log
+
+# Local editor and OS files
+.DS_Store
+.vscode/
+
