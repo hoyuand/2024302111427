@@ -14,9 +14,9 @@ Lab0 不计分，但必须通过，且会在 Lab1 现场验收时随机抽查。
 - `notes/lab0-reading-notes.md`：源码依据、关键不变式、自查题答案与现场问答提纲。
 - `notes/course-requirements.md`：根据《05-学生须知》整理的全学期执行规则。
 - `evidence/environment-check.md`：WSL2 和课程工具链自检记录。
-- `evidence/manual-capture-guide.md`：必须由本人完成的手绘及截图步骤。
+- `evidence/manual-capture-guide.md`：软件图纸导出与验收截图步骤。
 
-Mermaid 图是手绘底稿和复习材料。实验说明书要求三张图由本人理解并亲手绘制，因此验收前须按 `evidence/manual-capture-guide.md` 将手绘照片补入 `evidence/handdrawn/`。
+三张图使用常用的 Mermaid 流程图软件绘制，`.mmd` 是可编辑源文件，`.svg` 和 `.png` 是提交与展示版本。实验说明书要求本人理解并亲手绘制，但没有限定纸笔；使用软件绘图时仍须逐条核对并能在现场解释所有箭头和自主思考。
 
 ## 每次实验完成后的固定流程
 

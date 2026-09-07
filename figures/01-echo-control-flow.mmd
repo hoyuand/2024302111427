@@ -1,60 +1,60 @@
-%%{init: {"theme":"base","themeVariables":{"fontSize":"18px","fontFamily":"Microsoft YaHei, Arial, sans-serif"},"flowchart":{"nodeSpacing":35,"rankSpacing":45}}}%%
+%%{init: {"theme":"base","themeVariables":{"fontSize":"17px","fontFamily":"Microsoft YaHei, Arial, sans-serif"},"flowchart":{"nodeSpacing":28,"rankSpacing":38,"curve":"basis"}}}%%
 flowchart TB
-  classDef user fill:#e8f5e9,stroke:#287d3c,color:#111,stroke-width:2px
-  classDef kernel fill:#e8f0fe,stroke:#2f5da8,color:#111,stroke-width:2px
-  classDef sched fill:#f3e8ff,stroke:#7b3fa1,color:#111,stroke-width:2px
-  classDef device fill:#fff3d6,stroke:#b56b00,color:#111,stroke-width:2px
-  classDef note fill:#fff8c5,stroke:#8a6d00,color:#111,stroke-width:2px
+  classDef user fill:#e9f6ec,stroke:#24733a,color:#111,stroke-width:2px
+  classDef kernel fill:#eaf1fb,stroke:#315f9f,color:#111,stroke-width:2px
+  classDef sched fill:#f3ecf8,stroke:#77459a,color:#111,stroke-width:2px
+  classDef device fill:#fff1d7,stroke:#aa6500,color:#111,stroke-width:2px
+  classDef note fill:#fff9d9,stroke:#8a7000,color:#111,stroke-width:1.5px
+  classDef legend fill:#f7f7f7,stroke:#666,color:#111,stroke-dasharray:4 3
 
-  subgraph INPUT[阶段一 输入与唤醒]
+  subgraph INPUT[1 输入、阻塞与唤醒]
     direction LR
-    shRead["Shell: getcmd -> gets -> read(0)<br/>U态 | Shell用户栈 | 无锁"]:::user
-    readTrap["ecall -> uservec -> usertrap -> syscall -> sys_read<br/>S态 | Shell内核栈 | 无锁"]:::kernel
-    consRead["fileread -> devsw[1].read -> consoleread<br/>持cons.lock检查输入缓冲区"]:::kernel
-    sleepPrep["sleep_prepare(&cons.r)<br/>释放cons.lock -> sleep<br/>S态 | Shell内核栈 | p.lock交给调度器"]:::kernel
-    schedulerIdle["scheduler扫描进程表 / wfi<br/>S态 | CPU调度器栈 | 逐项持p.lock"]:::sched
-    keyboard["键盘输入 echo hi + Enter<br/>UART IRQ 10 -> PLIC"]:::device
-    uartIn["kernelvec -> kerneltrap -> devintr<br/>plic_claim -> uartintr -> consoleintr<br/>S态 | 当前调度器栈 | cons.lock"]:::kernel
-    wakeShell["写cons.buf; cons.w=cons.e<br/>wakeup(&cons.r): Shell -> RUNNABLE"]:::kernel
-    resumeRead["scheduler -> swtch -> Shell<br/>consoleread复制 echo hi\\n<br/>sys_read返回"]:::kernel
-    returnShell["prepare_return -> userret -> sret<br/>U态 | Shell用户栈 | 无锁"]:::user
-    shRead --> readTrap --> consRead --> sleepPrep --> schedulerIdle
-    keyboard --> uartIn --> wakeShell --> schedulerIdle
-    schedulerIdle --> resumeRead --> returnShell
+    i1["Shell: read(0)<br/>U态 | 用户栈 | 无锁"]:::user
+    i2["ecall -> uservec -> usertrap<br/>syscall -> sys_read<br/>S态 | Shell内核栈 | 无锁"]:::kernel
+    i3["consoleread: 缓冲区为空<br/>cons.lock -> sleep_prepare<br/>SLEEPING；p.lock交给scheduler"]:::kernel
+    i4["scheduler / wfi<br/>S态 | CPU调度器栈 | 检查时持p.lock"]:::sched
+    i5["键入 echo hi + Enter<br/>UART IRQ 10 -> PLIC"]:::device
+    i6["kerneltrap -> devintr -> uartintr<br/>consoleintr写缓冲并wakeup<br/>S态 | 内核/调度器栈 | cons.lock"]:::kernel
+    i7["Shell RUNNABLE -> RUNNING<br/>swtch；read返回；userret -> sret<br/>U态 | Shell用户栈 | 无锁"]:::user
+    n1["个人思考1｜sleep先登记chan再释放cons.lock，<br/>避免检查与睡眠之间丢失唤醒。"]:::note
+    legend["Lab0 | 杜浩源 | 2024302111427<br/>标签：特权级 | 当前栈 | 自旋锁<br/>中断已委托S态；M态只参与启动配置。"]:::legend
+
+    i1 --> i2 --> i3 --> i4
+    i5 --> i6 --> i7
+    i4 -->|选择Shell| i7
+    i3 -.-> n1
   end
 
-  subgraph CREATE[阶段二 fork exec 与父进程等待]
+  subgraph CREATE[2 fork、exec 与 wait]
     direction LR
-    parse["parsecmd -> fork<br/>U态 | Shell用户栈 | 无锁"]:::user
-    forkKernel["uservec -> usertrap -> syscall -> sys_fork -> kfork<br/>复制用户页/trapframe/ofile; child a0=0<br/>S态 | Shell内核栈"]:::kernel
-    parent["父Shell: fork返回child pid -> wait<br/>kwait无僵尸子进程 -> sleep<br/>SLEEPING | wait通道=Shell proc"]:::kernel
-    child["子进程: fork返回0 -> runcmd -> exec(echo)<br/>U态 | 子用户栈 | 无锁"]:::user
-    execKernel["sys_exec -> kexec<br/>构造新页表并加载ELF/guard/stack/argv<br/>成功后原子替换pagetable, sz, epc, sp<br/>S态 | 子进程内核栈"]:::kernel
-    echoStart["prepare_return -> userret -> sret<br/>echo _start -> main(argc, argv)<br/>U态 | echo用户栈 | 无锁"]:::user
-    parse --> forkKernel
-    forkKernel -->|"父返回值=child pid"| parent
-    forkKernel -->|"子返回值=0"| child --> execKernel --> echoStart
+    f1["Shell: parsecmd -> fork<br/>U态 | Shell用户栈 | 无锁"]:::user
+    f2["sys_fork -> kfork<br/>复制页表、trapframe、ofile<br/>S态 | Shell内核栈"]:::kernel
+    f3["父Shell: fork返回child pid<br/>wait无ZOMBIE -> SLEEPING"]:::kernel
+    f4["子进程: fork返回0 -> exec(echo)<br/>U态 -> S态 | 子进程内核栈"]:::user
+    f5["kexec: 装载ELF、guard、stack<br/>全部成功后提交pagetable/sz/epc/sp"]:::kernel
+    f6["userret -> sret -> echo main<br/>U态 | echo用户栈 | 无锁"]:::user
+    n2["个人思考2｜exec先构造新地址空间再一次提交，<br/>失败时原程序仍可继续。"]:::note
+
+    f1 --> f2
+    f2 -->|父: a0=child pid| f3
+    f2 -->|子: a0=0| f4 --> f5 --> f6
+    f5 -.-> n2
   end
 
-  subgraph OUTPUT[阶段三 write 输出与 exit 回收]
+  subgraph OUTPUT[3 write、exit 与回收]
     direction LR
-    echoWrite["echo main: write(1, hi, 2); write(1, newline, 1)<br/>U态 | echo用户栈 | 无锁"]:::user
-    writeTrap["ecall -> uservec -> usertrap -> syscall -> sys_write<br/>S态 | echo内核栈 | 无锁"]:::kernel
-    filePath["argfd(1) -> filewrite(FD_DEVICE)<br/>devsw[CONSOLE].write -> consolewrite<br/>copyin用户字节"]:::kernel
-    uartOut["uartwrite: 持tx_lock睡眠锁<br/>LSR_TX_IDLE ? 写THR : sleep(tx_chan)<br/>UART发送完成中断负责wakeup"]:::device
-    screen["屏幕显示 hi"]:::device
-    echoExit["echo exit(0) -> sys_exit -> kexit<br/>逐个fileclose; state=ZOMBIE<br/>持wait_lock+p.lock; wakeup(parent); sched"]:::kernel
-    reap["scheduler运行Shell<br/>wait发现ZOMBIE -> freeproc回收<br/>Shell继续下一轮getcmd"]:::sched
-    echoWrite --> writeTrap --> filePath --> uartOut --> screen --> echoExit --> reap
+    o1["echo: write(1, hi) + write(1, newline)<br/>U态 | echo用户栈 | 无锁"]:::user
+    o2["sys_write -> filewrite<br/>devsw[1].write -> consolewrite<br/>S态 | echo内核栈"]:::kernel
+    o3["uartwrite<br/>持uart_tx_lock；满则sleep并释放锁<br/>空闲则写UART THR"]:::device
+    o4["UART发送完成 -> 屏幕显示 hi<br/>中断唤醒等待发送者"]:::device
+    o5["exit -> fileclose -> ZOMBIE<br/>wait_lock + p.lock；wakeup(parent)<br/>sched交回调度器"]:::kernel
+    o6["父Shell被echo唤醒并调度<br/>wait找到ZOMBIE；freeproc回收<br/>继续getcmd"]:::sched
+    n3["个人思考3｜ZOMBIE不是资源泄漏：<br/>文件已关闭，只保留wait所需状态。"]:::note
+
+    o1 --> o2 --> o3 --> o4 --> o5 --> o6
+    o5 -.-> n3
   end
 
-  returnShell --> parse
-  echoStart --> echoWrite
-  parent -. "echo退出后被唤醒" .-> reap
-
-  thought1["个人思考1：sleep_prepare先登记chan再释放cons.lock，<br/>把检查为空与真正睡眠之间的丢失唤醒窗口封住。"]:::note
-  thought2["个人思考2：exec失败不能破坏旧地址空间；<br/>只有新镜像完全装好后才提交pagetable。"]:::note
-  thought3["个人思考3：exit先关闭ofile再成为ZOMBIE；<br/>ZOMBIE只保留父进程wait所需的身份和退出状态。"]:::note
-  sleepPrep -.-> thought1
-  execKernel -.-> thought2
-  echoExit -.-> thought3
+  i7 --> f1
+  f6 --> o1
+  f3 -. "echo退出后唤醒" .-> o6

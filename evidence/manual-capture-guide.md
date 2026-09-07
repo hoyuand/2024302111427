@@ -1,53 +1,47 @@
-# Lab0 手绘与截图操作指南
+# Lab0 软件图纸与截图指南
 
-实验说明书要求三张图由本人理解并亲手绘制。数字图已覆盖验收点，但最终证据必须补上本人手绘照片。
+课程原文要求三张图“自己理解并亲手绘制”，没有限定纸笔。任课教师允许软件绘图时，可直接提交本仓库 `figures/` 中的 Mermaid 图纸；现场验收前必须逐条检查并能脱离图稿说明因果关系。
 
-## 一 手绘三张图
+## 一 图纸文件
 
-准备三张 A4 横向白纸，黑色笔画主流程，蓝色笔写栈和特权级，红色笔写锁和个人思考。每张纸右下角手写：
+每张图提供三种格式：
 
-```text
-杜浩源 2024302111427 Lab0
-```
+- `.mmd`：Mermaid 可编辑源文件，证明图纸不是一张不可修改的成品图片。
+- `.svg`：矢量展示与打印版本，任意缩放仍保持清晰。
+- `.png`：适合直接插入实验报告或提交平台。
 
-不要逐像素临摹。先读 `notes/lab0-reading-notes.md`，再参考三张 PNG，用自己的话重画并能口述箭头。
-
-### 图一检查项
-
-- 从 Shell 的 `read` 阻塞开始，画出 UART 中断唤醒。
-- 覆盖 `fork -> exec -> write -> exit -> wait 回收`。
-- 在关键节点旁写 U/S 态、用户栈/进程内核栈/调度器栈。
-- 标出 `cons.lock`、`p->lock`、`wait_lock`，以及 UART 的睡眠锁。
-- 至少写一条自己的疑问或边界思考。
-
-### 图二检查项
-
-- 明确截面是 `exec` 已提交新页表、echo 尚未执行首条用户指令。
-- 画 init、shell、echo 的 state、parent、pagetable、sz、ofile。
-- 画三级页表索引与六个关键虚拟页，写出 PTE 权限。
-- 画 `ofile -> struct file -> inode -> devsw[1] -> consolewrite`。
-- 至少写一条自己的疑问或边界思考。
-
-### 图三检查项
-
-- 从 `scause=0x8000000000000005` 开始。
-- 覆盖硬件 CSR、`uservec` 保存现场、切内核栈/页表、`usertrap`、`clockintr`、`yield`、`swtch`、scheduler、`prepare_return`、`userret`、`sret`。
-- 标清 `tickslock` 与 `p->lock` 的获取和释放。
-- 至少写一条自己的疑问或边界思考。
-
-## 二 拍摄手绘证据
-
-1. 把纸平放在光线均匀的桌面，避免灯光反射。
-2. 手机相机切换到最高分辨率，镜头与纸面保持平行，让四个纸角都进入画面。
-3. 每张图拍一张完整照片；若文字仍不清晰，再为密集区域各拍一张近照。
-4. 检查放大后函数名、权限位、箭头和姓名学号都能读清。
-5. 按以下名称放入仓库：
+对应关系：
 
 ```text
-evidence/handdrawn/01-echo-control-flow.jpg
-evidence/handdrawn/02-exec-state-snapshot.jpg
-evidence/handdrawn/03-timer-interrupt-journey.jpg
+figures/01-echo-control-flow.*
+figures/02-exec-state-snapshot.*
+figures/03-timer-interrupt-journey.*
 ```
+
+如需自行修改，打开 <https://mermaid.live/>，粘贴 `.mmd` 内容并编辑。修改后同时更新 `.svg` 和 `.png`，避免源文件与图片不一致。
+
+## 二 验收前逐图复核
+
+### 图一：echo 全系统控制流
+
+- 能沿箭头口述 `read -> 阻塞 -> UART唤醒 -> fork -> exec -> write -> exit -> wait回收`。
+- 能区分用户栈、进程内核栈和 CPU 调度器栈。
+- 能解释 U/S 态切换、M 态为何不进入本次运行链路，以及 `cons.lock`、`p.lock`、`uart_tx_lock` 的作用。
+- 能解释三条个人思考，而不只是照读文字。
+
+### 图二：exec 后状态快照
+
+- 能说明快照时刻为何 echo 已是新地址空间，但 PID、parent、ofile 没变。
+- 能从 L2/L1/L0 走到低地址四页、TRAPFRAME 和 TRAMPOLINE。
+- 能解释 guard page 的 `U=0`、空 heap 的边界和标准输出引用链。
+- 能解释 `ref=9` 的场景假设：init、shell、echo 各有三个控制台 fd。
+
+### 图三：时钟中断旅程
+
+- 能说明硬件保存什么、`uservec` 还要保存什么，以及硬件为何不能直接换页表和栈。
+- 能说明 `tickslock`、`p.lock` 各自在哪一段持有。
+- 能说明 `swtch` 的双向交接、`prepare_return/userret` 和 `sret` 的恢复顺序。
+- 能解释三条个人思考，尤其是同址 TRAMPOLINE 和跨 `swtch` 持锁。
 
 ## 三 获取环境自检截图
 
@@ -59,13 +53,13 @@ cd /mnt/c/Users/27226/Documents/ChatGPT/OS实践
 python3 tools/preflight.py
 ```
 
-3. 将终端窗口拉高，保证从标题 `== osLab 开课前环境自检 ==` 到最后一行 `结论:环境自检通过` 全部同时可见。
-4. 按 `Win + Shift + S`，选择“矩形截图”，框住终端标题栏、命令和完整输出。
-5. 保存为 `evidence/screenshots/01-preflight.png`。截图必须显示命令和完整输出，不要只截最后一行。
+3. 调整窗口高度，使标题、命令和结论同时可见。
+4. 按 `Win + Shift + S`，框选完整终端窗口。
+5. 保存为 `evidence/screenshots/01-preflight.png`。
 
 ## 四 获取 Git 与标签截图
 
-在同一终端执行：
+执行：
 
 ```bash
 git log --oneline --decorate --graph --all
@@ -74,31 +68,24 @@ git tag --list
 git remote -v
 ```
 
-将命令和结果完整截入一张图，保存为 `evidence/screenshots/02-git-proof.png`。应能看到 `lab0` 指向本次提交、工作区 clean，以及 GitHub 的 origin 地址。
+将命令和结果完整截入一张图，保存为 `evidence/screenshots/02-git-proof.png`。截图中应能看到 `lab0`、clean 工作区和 `origin`。
 
-## 五 获取 GitHub 仓库截图
+## 五 获取 GitHub 截图
 
-1. 浏览器打开本项目 GitHub 页面。
-2. 页面上方应清晰显示仓库名 `os-A---2024302111427`，右侧 About 区域应显示课程项目全称 `os实践A-杜浩源-2024302111427`。GitHub 会从仓库名中移除中文字符，这是平台限制。
-3. 文件列表应能看到 `figures`、`notes`、`evidence` 和 `kernel`。
-4. 打开仓库的 Tags 页面，确认 `lab0` 存在。
-5. 分别截图仓库首页和 Tags 页面，保存为：
+1. 打开 <https://github.com/hoyuand/os-A---2024302111427>。
+2. 截取仓库首页，确保文件列表包含 `figures`、`notes`、`evidence`、`kernel`，保存为 `evidence/screenshots/03-github-repository.png`。
+3. 打开 Tags 页面，确认 `lab0` 存在，保存为 `evidence/screenshots/04-github-lab0-tag.png`。
 
-```text
-evidence/screenshots/03-github-repository.png
-evidence/screenshots/04-github-lab0-tag.png
-```
+GitHub 会移除仓库名中的中文字符，因此 URL 中显示 `os-A---2024302111427`；课程项目全称保留在 README 标题和仓库描述中。
 
-## 六 补交前最终检查
-
-照片与截图加入后执行：
+## 六 截图补入后的最终提交
 
 ```bash
 git add .
-git commit -m "第0次实验：补充手绘与验收截图"
+git commit -m "第0次实验：补充验收截图"
 git tag -f lab0
 git push origin main
 git push origin lab0 --force
 ```
 
-这里移动 `lab0` 标签是因为证据文件是在初次提交后由本人补入；最终标签必须指向包含完整证据的提交。
+最终 `lab0` 标签应指向包含全部图纸和截图的提交。
