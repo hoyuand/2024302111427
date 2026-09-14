@@ -1,14 +1,78 @@
 /*
- * lab1 初始骨架代码(自动生成): 系统启动与串口控制台输出。
- * 启动至此的前期初始化流程，需要由你在本实验中设计并实现。
- * 你需要实现: entry.S(start 前的 M 态准备可另置 start.c)、串口轮询输出、
- * 最小 printf。链接脚本 kernel.ld 带注释保留; 底层宏 riscv.h 完整保留。
- * 代码导读路线与设计引导问题详见《实验说明书(lab1)》。
- *
- * 两个环境注意事项(说明书 §2"环境前置条件"与附录 C, 动手前必读):
- *  1. start() 的 M→S 切换清单必须包含 PMP 配置(最简两行):
- *       w_pmpaddr0(0x3fffffffffffffull); w_pmpcfg0(0xf);
- *     否则在新版 QEMU 上 mret 进 S 态的第一条取指即触发 fault(全程无输出)。
- *  2. entry.S 里的陷阱向量标号前加 .balign 4(mtvec 要求 4 字节对齐,
- *     不满足时写入会被硬件静默丢弃)。
+ * Lab1 启动入口：QEMU -bios none 从 0x80000000 开始执行。
+ * 本文件完成 M 态配置、PMP 授权、降权到 S 态和从核 park。
  */
+
+#include "course_sid.h"
+
+        .section .text
+        .globl  _entry
+        .type   _entry, @function
+_entry:
+        /* 启动阶段没有时钟/设备中断，先关闭 machine-mode 中断。 */
+        csrw    mie, zero
+        csrr    tp, mhartid
+        bnez    tp, secondary_hart
+
+        /* 每个 hart 只保留一个启动栈；栈顶位于 BSS 的高地址端。 */
+        la      sp, bootstack
+        li      t0, (LAB1_STACK_KB * 1024)
+        add     sp, sp, t0
+
+        /* M/S 态意外陷阱均落入对齐的兜底处理器。 */
+        la      t0, m_trap_vector
+        csrw    mtvec, t0
+
+        /* 现代 QEMU 要求降权后的取指/访存落在 PMP 授权区域内。 */
+        li      t0, 0x3fffffffffffff       /* pmpaddr0: 全物理地址 NAPOT */
+        csrw    pmpaddr0, t0
+        li      t0, 0xf                    /* pmpcfg0: A=NAPOT,R=W=X=1,L=0 */
+        csrw    pmpcfg0, t0
+
+        /* 把异常和中断委托给 S 态；本实验暂不打开设备中断。 */
+        li      t0, -1
+        csrw    medeleg, t0
+        csrw    mideleg, t0
+        csrw    mie, zero
+
+        /* 早期没有页表，明确使用 Bare 模式并刷新 TLB。 */
+        csrw    satp, zero
+        sfence.vma zero, zero
+
+        /* mret 的目标为 start，且 MPP=S；MIE 再次显式清零。 */
+        la      t0, start
+        csrw    mepc, t0
+        csrr    t1, mstatus
+        li      t2, (3 << 11)
+        not     t3, t2
+        and     t1, t1, t3
+        li      t2, (1 << 11)              /* MSTATUS.MPP = supervisor */
+        or      t1, t1, t2
+        li      t2, (1 << 3)               /* MSTATUS.MIE = 0 */
+        not     t3, t2
+        and     t1, t1, t3
+        csrw    mstatus, t1
+        mret
+
+secondary_hart:
+        /* 课程验收以单核为准；从核不碰共享初始化状态。 */
+        wfi
+        j       secondary_hart
+
+        .balign 4
+        .globl  m_trap_vector
+m_trap_vector:
+        wfi
+        j       m_trap_vector
+
+        .balign 4
+        .globl  s_trap_vector
+s_trap_vector:
+        wfi
+        j       s_trap_vector
+
+        .section .bss
+        .balign 4096
+        .globl  bootstack
+bootstack:
+        .space  (LAB1_STACK_KB * 1024)

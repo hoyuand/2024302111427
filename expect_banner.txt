@@ -1,0 +1,4 @@
+OSLAB1 sid=2024302111427 mod97=0x17
+printf-boundary zero=0 neg=-42 max=2147483647 empty=""
+printf-long=0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz
+[chk=1376]

@@ -1,14 +1,31 @@
-/*
- * lab1 初始骨架代码(自动生成): 系统启动与串口控制台输出。
- * 启动至此的前期初始化流程，需要由你在本实验中设计并实现。
- * 你需要实现: entry.S(start 前的 M 态准备可另置 start.c)、串口轮询输出、
- * 最小 printf。链接脚本 kernel.ld 带注释保留; 底层宏 riscv.h 完整保留。
- * 代码导读路线与设计引导问题详见《实验说明书(lab1)》。
- *
- * 两个环境注意事项(说明书 §2"环境前置条件"与附录 C, 动手前必读):
- *  1. start() 的 M→S 切换清单必须包含 PMP 配置(最简两行):
- *       w_pmpaddr0(0x3fffffffffffffull); w_pmpcfg0(0xf);
- *     否则在新版 QEMU 上 mret 进 S 态的第一条取指即触发 fault(全程无输出)。
- *  2. entry.S 里的陷阱向量标号前加 .balign 4(mtvec 要求 4 字节对齐,
- *     不满足时写入会被硬件静默丢弃)。
- */
+/* Lab1：个性化 banner、自检序列与 printf 边界回归。 */
+#include "types.h"
+#include "course_sid.h"
+
+typedef long int64;
+
+extern void printf(const char *fmt, ...);
+extern void console_checksum_begin(void);
+extern uint32 console_checksum_end(void);
+
+void
+main(void)
+{
+  /* 协议 2：校验和是整段启动输出的 ASCII 字节和（含换行）mod 10000，
+   * 最终以 [chk=十进制] 输出；关闭累加后不再产生正文。 */
+  console_checksum_begin();
+
+  /* 个性化 banner：学号十进制、sid%97 的小写无前导零十六进制。 */
+  printf("OSLAB1 sid=%ld mod97=0x%x\n", (int64)COURSE_SID,
+         (uint)(COURSE_SID % 97));
+
+  /* 自检序列：覆盖 0、负数、最大 int、空字符串和连续长字符串。 */
+  printf("printf-boundary zero=%d neg=%d max=%d empty=\"%s\"\n",
+         0, -42, 2147483647, "");
+  printf("printf-long=");
+  printf("0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz"
+         "0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz\n");
+
+  uint32 checksum = console_checksum_end();
+  printf("[chk=%u]\n", checksum);
+}
