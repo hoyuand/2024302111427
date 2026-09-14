@@ -1,0 +1,17 @@
+Lab1 Git archive proof
+======================
+HEAD: defa0e076d3beea398d63c257cbca276818d30b5
+Commit: 第1次实验：完成启动与串口输出
+Tag: lab1 -> defa0e076d3beea398d63c257cbca276818d30b5
+Previous tag: lab0 -> 3e297e8
+Remote: https://github.com/hoyuand/os-A---2024302111427.git
+Working tree: clean (generated 提交-lab1-2024302111427.zip is ignored)
+
+Push note
+---------
+Two HTTPS push attempts were made from Windows Git and WSL Git. Both were blocked by
+the current network proxy/TLS path before GitHub returned a repository response:
+"schannel: server closed abruptly (missing close_notify)" / "unexpected eof while reading".
+The local branch and tag are ready; after connectivity is restored run:
+  git push origin main
+  git push origin lab1

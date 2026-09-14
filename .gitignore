@@ -3,6 +3,7 @@ kernel/*.o
 kernel/*.d
 kernel/kernel
 *.log
+提交-*.zip
 
 # Local editor and OS files
 .DS_Store

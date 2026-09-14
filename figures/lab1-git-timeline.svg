@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500">
+  <rect width="1200" height="500" fill="#f8fafc"/>
+  <text x="58" y="70" fill="#0f172a" font-family="Arial,sans-serif" font-size="32" font-weight="700">Lab1 Git 归档证据</text>
+  <text x="58" y="105" fill="#475569" font-family="Arial,sans-serif" font-size="18">可在期末报告中与后续 lab 标签按同一时间线汇总</text>
+  <line x1="130" y1="250" x2="1070" y2="250" stroke="#64748b" stroke-width="6"/>
+  <circle cx="190" cy="250" r="22" fill="#2563eb"/>
+  <circle cx="530" cy="250" r="22" fill="#16a34a"/>
+  <circle cx="870" cy="250" r="22" fill="#7c3aed"/>
+  <text x="140" y="204" fill="#1e3a8a" font-family="Arial,sans-serif" font-size="22" font-weight="700">lab0</text>
+  <text x="102" y="302" fill="#334155" font-family="Consolas,monospace" font-size="17">3e297e8</text>
+  <text x="88" y="334" fill="#475569" font-family="Arial,sans-serif" font-size="17">架构图与课程前置</text>
+  <text x="480" y="204" fill="#166534" font-family="Arial,sans-serif" font-size="22" font-weight="700">lab1</text>
+  <text x="415" y="302" fill="#334155" font-family="Consolas,monospace" font-size="17">defa0e0</text>
+  <text x="360" y="334" fill="#475569" font-family="Arial,sans-serif" font-size="17">启动、UART、printf、测试</text>
+  <text x="790" y="204" fill="#5b21b6" font-family="Arial,sans-serif" font-size="22" font-weight="700">后续</text>
+  <text x="744" y="302" fill="#334155" font-family="Consolas,monospace" font-size="17">lab2 … labN</text>
+  <text x="706" y="334" fill="#475569" font-family="Arial,sans-serif" font-size="17">沿用同一提交与证据规范</text>
+  <rect x="58" y="390" width="1084" height="58" rx="8" fill="#e2e8f0"/>
+  <text x="84" y="427" fill="#334155" font-family="Consolas,monospace" font-size="17">remote  https://github.com/hoyuand/os-A---2024302111427.git</text>
+</svg>

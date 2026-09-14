@@ -1,0 +1,24 @@
+Lab1 reproducible verification record
+Date: 2026-09-14 (Asia/Shanghai)
+Repository: hoyuand/os-A---2024302111427
+Commit: defa0e076d3beea398d63c257cbca276818d30b5
+Tag: lab1
+
+Commands
+--------
+wsl.exe bash -lc 'cd /mnt/c/Users/27226/Documents/ChatGPT/OS实践 && make clean && make'
+wsl.exe bash -lc 'cd /mnt/c/Users/27226/Documents/ChatGPT/OS实践 && python3 check_expect.py 2024302111427 expect_banner.txt'
+wsl.exe bash -lc 'cd /mnt/c/Users/27226/Documents/ChatGPT/OS实践 && python3 -m unittest discover -s tests -p "test_*.py" -v'
+wsl.exe bash -lc 'cd /mnt/c/Users/27226/Documents/ChatGPT/OS实践 && python3 tests/verify_lab1_qemu.py'
+
+Results
+-------
+Build: PASS (riscv64-unknown-elf-gcc + riscv64-unknown-elf-ld)
+Shape checker: PASS (sid=2024302111427, protocol=2)
+Unit tests: PASS (6 tests, including all Lab0 regressions)
+UART capture: PASS (259 bytes match expect_banner.txt)
+Reboot idempotence: PASS (two cold boots identical)
+QEMU -d int: PASS (empty trap log)
+
+The generated local archive is 提交-lab1-2024302111427.zip. It is intentionally ignored by
+Git because it is a derived archive; the source commit and tag are the canonical record.
