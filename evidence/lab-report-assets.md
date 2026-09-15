@@ -10,7 +10,9 @@
 Lab1 资产：
 
 * [QEMU 输出与验收结果图](../figures/lab1-verification.svg)
+* [QEMU 输出与验收结果 PNG](../figures/lab1-verification.png)
 * [Git 提交与标签图](../figures/lab1-git-timeline.svg)
+* [Git 提交与标签 PNG](../figures/lab1-git-timeline.png)
 * [构建与测试文字记录](lab1-build-and-test.txt)
 * [串口逐字节记录](lab1-qemu-output.txt)
 * [Git 归档记录](lab1-git-proof.txt)

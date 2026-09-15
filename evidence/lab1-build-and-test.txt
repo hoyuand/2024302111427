@@ -1,7 +1,7 @@
 Lab1 reproducible verification record
 Date: 2026-09-14 (Asia/Shanghai)
 Repository: hoyuand/os-A---2024302111427
-Commit: defa0e076d3beea398d63c257cbca276818d30b5
+Commit: acb1493d77e3ba61b6053b63ae8821ec607b4948
 Tag: lab1
 
 Commands
