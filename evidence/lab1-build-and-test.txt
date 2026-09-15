@@ -1,8 +1,8 @@
 Lab1 reproducible verification record
 Date: 2026-09-14 (Asia/Shanghai)
 Repository: hoyuand/os-A---2024302111427
-Commit: acb1493d77e3ba61b6053b63ae8821ec607b4948
-Tag: lab1
+Source commit: resolve `lab1` with `git rev-parse lab1`
+Branch/tag invariant: `main` and `lab1` resolve to the same commit after push
 
 Commands
 --------

@@ -10,7 +10,7 @@
   <text x="102" y="302" fill="#334155" font-family="Consolas,monospace" font-size="17">3e297e8</text>
   <text x="88" y="334" fill="#475569" font-family="Arial,sans-serif" font-size="17">架构图与课程前置</text>
   <text x="480" y="204" fill="#166534" font-family="Arial,sans-serif" font-size="22" font-weight="700">lab1</text>
-  <text x="415" y="302" fill="#334155" font-family="Consolas,monospace" font-size="17">defa0e0</text>
+  <text x="415" y="302" fill="#334155" font-family="Consolas,monospace" font-size="17">main + lab1</text>
   <text x="360" y="334" fill="#475569" font-family="Arial,sans-serif" font-size="17">启动、UART、printf、测试</text>
   <text x="790" y="204" fill="#5b21b6" font-family="Arial,sans-serif" font-size="22" font-weight="700">后续</text>
   <text x="744" y="302" fill="#334155" font-family="Consolas,monospace" font-size="17">lab2 … labN</text>
