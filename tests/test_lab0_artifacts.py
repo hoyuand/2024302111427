@@ -36,18 +36,6 @@ class Lab0ArtifactsTest(unittest.TestCase):
                 text.count("个人思考"), 3, f"{path.name} 自主批注不足3处"
             )
 
-    def test_markdown_wrappers_embed_exact_mermaid_source(self):
-        for source in sorted(LAB0_IMAGES.glob("*.mmd")):
-            wrapper = source.with_suffix(".md").read_text(encoding="utf-8-sig")
-            start = wrapper.index("```mermaid\n") + len("```mermaid\n")
-            end = wrapper.rindex("```")
-            embedded = wrapper[start:end]
-            self.assertEqual(
-                source.read_text(encoding="utf-8").rstrip() + "\n",
-                embedded,
-                f"{source.name} 与 Markdown 包装内容不一致",
-            )
-
     def test_personal_baseline_is_present_and_unchanged_shape(self):
         sid_header = (ROOT / "kernel" / "course_sid.h").read_text(encoding="utf-8")
         params = (ROOT / "我的参数.txt").read_text(encoding="utf-8")
@@ -74,10 +62,14 @@ class Lab0ArtifactsTest(unittest.TestCase):
         for name in (
             "lab1-summary.md",
             "lab1-qemu-real-run.txt",
-            "lab1-qemu-real-run.html",
             "lab1-git-proof.txt",
         ):
             self.assertTrue((lab1_docs / name).is_file(), name)
+
+        self.assertFalse(list((ROOT / "teacher-check" / "lab0" / "images").glob("*.svg")))
+        self.assertFalse(list((ROOT / "teacher-check" / "lab0" / "images").glob("*.md")))
+        self.assertFalse(list((ROOT / "teacher-check" / "lab1" / "images").glob("*.svg")))
+        self.assertFalse(list((ROOT / "teacher-check" / "lab1" / "images").glob("*.md")))
 
     def test_lab1_mermaid_source_is_monochrome(self):
         source = (

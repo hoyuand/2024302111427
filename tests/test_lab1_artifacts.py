@@ -19,7 +19,7 @@ class Lab1ArtifactsTest(unittest.TestCase):
             capture_output=True, text=True, check=False,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertRegex(text, r"\[chk=\d+\]$")
+        self.assertRegex(text.rstrip(), r"\[chk=\d+\]$")
 
     def test_startup_invariants_are_present(self):
         entry = (ROOT / "kernel" / "entry.S").read_text(encoding="utf-8")

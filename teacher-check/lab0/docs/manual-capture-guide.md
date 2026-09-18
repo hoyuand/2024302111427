@@ -4,21 +4,20 @@
 
 ## 一 图纸文件
 
-每张图提供三种格式：
+每张图提供一张展示图片和一份源文件：
 
 - `.mmd`：Mermaid 可编辑源文件，证明图纸不是一张不可修改的成品图片。
-- `.svg`：矢量展示与打印版本，任意缩放仍保持清晰。
 - `.png`：适合直接插入实验报告或提交平台。
 
 对应关系：
 
 ```text
-teacher-check/lab0/images/01-echo-control-flow.*
-teacher-check/lab0/images/02-exec-state-snapshot.*
-teacher-check/lab0/images/03-timer-interrupt-journey.*
+teacher-check/lab0/images/01-echo-control-flow.{mmd,png}
+teacher-check/lab0/images/02-exec-state-snapshot.{mmd,png}
+teacher-check/lab0/images/03-timer-interrupt-journey.{mmd,png}
 ```
 
-如需自行修改，打开 <https://mermaid.live/>，粘贴 `.mmd` 内容并编辑。修改后同时更新 `.svg` 和 `.png`，避免源文件与图片不一致。
+如需自行修改，打开 <https://mermaid.live/>，粘贴 `.mmd` 内容并编辑，然后重新导出对应 PNG。
 
 ## 二 验收前逐图复核
 

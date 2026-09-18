@@ -2,7 +2,7 @@ Lab1 QEMU 实际运行原始记录
 ==========================
 捕获日期：2026-09-18（Asia/Shanghai）
 命令：qemu-system-riscv64 -machine virt -bios none -kernel kernel/kernel -nographic -smp 1
-说明：本文件中的 stdout 为本轮命令直接捕获的字节序列；没有手工改写。
+说明：本文件中的 stdout 为本轮命令直接捕获的字节序列；没有手工改写。截图 `images/lab1-terminal-run.png` 由 `tools/capture_lab1_terminal.ps1` 打开 Windows Terminal 后截取。
 
 OSLAB1 sid=2024302111427 mod97=0x17
 printf-boundary zero=0 neg=-42 max=2147483647 empty=""
