@@ -1,0 +1,13 @@
+# Lab 证据目录模板
+
+每次实验完成后，在 `teacher-check/labN/` 下建立两个子目录：
+
+* `images/`：至少一张真实运行截图；架构或时序说明使用 Mermaid、Graphviz 或手工 SVG，并同时保留可编辑源文件。
+* `docs/`：一页内的客观摘要、构建与测试记录、原始运行输出、Git 提交/标签证明。
+
+## 最小检查清单
+
+1. 截图中包含实际命令、关键输出和 PASS/结果，且对应 `docs/` 中的原始文本。
+2. 说明中写明环境、命令、结果、提交号和标签；不使用宣传性描述。
+3. 根目录 `README.md` 的教师检查表已登记该实验。
+4. 提交完成后执行 `git ls-remote --heads --tags origin refs/heads/main refs/tags/labN`，确认远端分支和标签指向同一提交。

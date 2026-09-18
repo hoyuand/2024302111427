@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#000000"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <text x="72" y="78" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="38" font-weight="700">Lab1 启动与串口验收记录</text>
+  <text x="72" y="120" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">QEMU virt · -nographic · -smp 1 · 学号 2024302111427 · 协议 2</text>
+
+  <rect x="72" y="164" width="1456" height="430" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="104" y="212" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="23">$ make clean &amp;&amp; make</text>
+  <text x="104" y="250" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="23" font-weight="700">BUILD PASS</text>
+  <line x1="104" y1="278" x2="1496" y2="278" stroke="#000000" stroke-width="1"/>
+  <text x="104" y="324" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="23">$ python3 tests/verify_lab1_qemu.py</text>
+  <text x="104" y="368" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="21">OSLAB1 sid=2024302111427 mod97=0x17</text>
+  <text x="104" y="402" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="21">printf-boundary zero=0 neg=-42 max=2147483647 empty=""</text>
+  <text x="104" y="436" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="21">printf-long=0123456789abcdefghijklmnopqrstuvwxyz × 4</text>
+  <text x="104" y="470" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="21">[chk=1376]</text>
+  <text x="104" y="526" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="21">[ok] UART bytes match expect_banner.txt (259 bytes)</text>
+  <text x="104" y="558" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="21">[ok] two cold boots are identical · [ok] QEMU -d int log is empty</text>
+
+  <text x="72" y="664" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="25" font-weight="700">可复核结论</text>
+  <rect x="72" y="700" width="438" height="190" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  <text x="104" y="752" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">9 / 9 PASS</text>
+  <text x="104" y="796" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">单元测试与证据布局检查</text>
+  <text x="104" y="834" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">测试脚本输出可在 docs/ 查阅</text>
+
+  <rect x="580" y="700" width="438" height="190" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  <text x="612" y="752" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">259 bytes exact</text>
+  <text x="612" y="796" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">与 expect_banner.txt 逐字节一致</text>
+  <text x="612" y="834" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">两次冷启动输出相同</text>
+
+  <rect x="1088" y="700" width="440" height="190" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  <text x="1120" y="752" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="28" font-weight="700">0 traps</text>
+  <text x="1120" y="796" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">QEMU 中断日志为空</text>
+  <text x="1120" y="834" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">结论来自实际运行命令</text>
+
+  <text x="72" y="950" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="17">图示为黑白矢量整理；真实运行截图：lab1-terminal-run.png；原始记录：docs/lab1-qemu-real-run.html。</text>
+</svg>

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+LAB0_IMAGES = ROOT / "teacher-check" / "lab0" / "images"
 
 
 class Lab0ArtifactsTest(unittest.TestCase):
@@ -23,19 +25,19 @@ class Lab0ArtifactsTest(unittest.TestCase):
             ],
         }
         for name, terms in expected.items():
-            text = (ROOT / "figures" / name).read_text(encoding="utf-8")
+            text = (LAB0_IMAGES / name).read_text(encoding="utf-8")
             for term in terms:
                 self.assertIn(term, text, f"{name} 缺少验收词: {term}")
 
     def test_each_diagram_has_three_personal_notes(self):
-        for path in sorted((ROOT / "figures").glob("*.mmd")):
+        for path in sorted(LAB0_IMAGES.glob("*.mmd")):
             text = path.read_text(encoding="utf-8")
             self.assertGreaterEqual(
                 text.count("个人思考"), 3, f"{path.name} 自主批注不足3处"
             )
 
     def test_markdown_wrappers_embed_exact_mermaid_source(self):
-        for source in sorted((ROOT / "figures").glob("*.mmd")):
+        for source in sorted(LAB0_IMAGES.glob("*.mmd")):
             wrapper = source.with_suffix(".md").read_text(encoding="utf-8-sig")
             start = wrapper.index("```mermaid\n") + len("```mermaid\n")
             end = wrapper.rindex("```")
@@ -52,6 +54,46 @@ class Lab0ArtifactsTest(unittest.TestCase):
         self.assertIn("#define COURSE_SID 2024302111427", sid_header)
         self.assertIn("LAB1_BANNER_PROTOCOL       = 2", params)
         self.assertIn("LAB1_STACK_KB              = 12", params)
+
+    def test_teacher_check_structure_is_complete(self):
+        for lab in ("lab0", "lab1"):
+            base = ROOT / "teacher-check" / lab
+            self.assertTrue((base / "README.md").is_file())
+            self.assertTrue((base / "images").is_dir())
+            self.assertTrue((base / "docs").is_dir())
+
+        lab1_images = ROOT / "teacher-check" / "lab1" / "images"
+        lab1_docs = ROOT / "teacher-check" / "lab1" / "docs"
+        for name in (
+            "lab1-terminal-run.png",
+            "lab1-verification.png",
+            "lab1-git-timeline.png",
+            "lab1-startup-sequence.png",
+        ):
+            self.assertTrue((lab1_images / name).is_file(), name)
+        for name in (
+            "lab1-summary.md",
+            "lab1-qemu-real-run.txt",
+            "lab1-qemu-real-run.html",
+            "lab1-git-proof.txt",
+        ):
+            self.assertTrue((lab1_docs / name).is_file(), name)
+
+    def test_lab1_mermaid_source_is_monochrome(self):
+        source = (
+            ROOT / "teacher-check" / "lab1" / "images" / "lab1-startup-sequence.mmd"
+        ).read_text(encoding="utf-8")
+        colors = set(re.findall(r"#[0-9a-fA-F]{6}", source.lower()))
+        self.assertTrue(colors <= {"#000000", "#ffffff"}, sorted(colors))
+
+    def test_lab0_diagrams_are_monochrome(self):
+        for path in LAB0_IMAGES.glob("*.mmd"):
+            text = path.read_text(encoding="utf-8")
+            colors = set(re.findall(r"#[0-9a-fA-F]{6}", text.lower()))
+            self.assertTrue(
+                colors <= {"#000000", "#ffffff"},
+                f"{path.name} 含非黑白颜色: {sorted(colors - {'#000000', '#ffffff'})}",
+            )
 
 
 if __name__ == "__main__":

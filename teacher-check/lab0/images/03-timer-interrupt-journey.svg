@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="850" viewBox="0 0 1600 850">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#000"/></marker></defs>
+<style>text{font-family:Arial,"Microsoft YaHei",sans-serif;fill:#000}.title{font-size:32px;font-weight:700}.sub{font-size:18px}.actor{font-size:17px;font-weight:700}.msg{font-size:16px}.line{stroke:#000;stroke-width:1.5;stroke-dasharray:7 5}.arrow{stroke:#000;stroke-width:2;fill:none;marker-end:url(#a)}.note{fill:#fff;stroke:#000;stroke-width:1;stroke-dasharray:6 4}</style>
+<rect width="1600" height="850" fill="#fff"/>
+<text x="55" y="58" class="title">Lab0  用户态时钟中断旅程</text>
+<text x="55" y="90" class="sub">RISC-V 硬件 → uservec → usertrap → yield / swtch → prepare_return → sret · 黑白版</text>
+<g transform="translate(0,125)">
+  <rect x="45" y="0" width="210" height="55" fill="#fff" stroke="#000" stroke-width="2"/><text x="150" y="34" text-anchor="middle" class="actor">用户进程 U态</text>
+  <rect x="275" y="0" width="180" height="55" fill="#fff" stroke="#000" stroke-width="2"/><text x="365" y="34" text-anchor="middle" class="actor">RISC-V硬件</text>
+  <rect x="475" y="0" width="190" height="55" fill="#fff" stroke="#000" stroke-width="2"/><text x="570" y="34" text-anchor="middle" class="actor">uservec</text>
+  <rect x="685" y="0" width="200" height="55" fill="#fff" stroke="#000" stroke-width="2"/><text x="785" y="34" text-anchor="middle" class="actor">usertrap</text>
+  <rect x="905" y="0" width="180" height="55" fill="#fff" stroke="#000" stroke-width="2"/><text x="995" y="34" text-anchor="middle" class="actor">yield / sched</text>
+  <rect x="1105" y="0" width="200" height="55" fill="#fff" stroke="#000" stroke-width="2"/><text x="1205" y="34" text-anchor="middle" class="actor">scheduler</text>
+  <rect x="1325" y="0" width="220" height="55" fill="#fff" stroke="#000" stroke-width="2"/><text x="1435" y="34" text-anchor="middle" class="actor">prepare_return</text>
+  <path d="M150 55 V610 M365 55 V610 M570 55 V610 M785 55 V610 M995 55 V610 M1205 55 V610 M1435 55 V610" class="line"/>
+  <path d="M365 90 H570" class="arrow"/><text x="378" y="82" class="msg">scause=0x8000000000000005；sepc=用户pc</text>
+  <path d="M570 150 H785" class="arrow"/><text x="582" y="142" class="msg">保存寄存器到 TRAPFRAME；读取 kernel_sp / kernel_satp</text>
+  <path d="M785 220 H995" class="arrow"/><text x="797" y="212" class="msg">devintr → clockintr → yield</text>
+  <path d="M995 290 H1205" class="arrow"/><text x="1007" y="282" class="msg">sched → swtch；RUNNING → RUNNABLE</text>
+  <path d="M1205 360 H995" class="arrow"/><text x="1007" y="352" class="msg">扫描 RUNNABLE；重新选择原进程</text>
+  <path d="M995 430 H785" class="arrow"/><text x="797" y="422" class="msg">swtch 返回；yield 返回 usertrap</text>
+  <path d="M785 500 H1435" class="arrow"/><text x="800" y="492" class="msg">prepare_return：intr_off；stvec=uservec；SPP=0；SPIE=1</text>
+  <path d="M1435 570 H365" class="arrow"/><text x="800" y="562" class="msg">userret 切用户页表、恢复寄存器；sret</text>
+  <path d="M365 610 H150" class="arrow"/><text x="165" y="602" class="msg">恢复用户 pc，继续原指令流</text>
+</g>
+<rect x="55" y="770" width="1490" height="55" class="note"/><text x="78" y="803" class="sub">个人思考：TRAMPOLINE 在两套页表中同址映射；p.lock 跨 swtch 交接；SPIE 决定 sret 后的中断状态。</text>
+</svg>

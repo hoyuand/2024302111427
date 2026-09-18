@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#000"/></marker></defs>
+<style>text{font-family:Arial,"Microsoft YaHei",sans-serif;fill:#000}.title{font-size:32px;font-weight:700}.sub{font-size:18px}.section{fill:#fff;stroke:#000;stroke-width:2}.box{fill:#fff;stroke:#000;stroke-width:1.5}.note{fill:#fff;stroke:#000;stroke-width:1;stroke-dasharray:6 4}.label{font-size:18px;font-weight:700}.body{font-size:17px}.arrow{stroke:#000;stroke-width:2;fill:none;marker-end:url(#a)}.dash{stroke:#000;stroke-width:1.5;stroke-dasharray:6 4;fill:none;marker-end:url(#a)}</style>
+<rect width="1600" height="1000" fill="#fff"/>
+<text x="55" y="58" class="title">Lab0  echo hi 全系统控制流</text>
+<text x="55" y="90" class="sub">单核假设 · U态 / S态 · 用户栈 / 内核栈 / 调度器栈 · 黑白版</text>
+<rect x="45" y="125" width="470" height="650" class="section"/><text x="70" y="160" class="label">1  输入与唤醒</text>
+<rect x="70" y="185" width="420" height="78" class="box"/><text x="90" y="215" class="body"><tspan>Shell: read(0)</tspan><tspan x="90" dy="25">U态 · 用户栈 · 无锁</tspan></text>
+<line x1="280" y1="263" x2="280" y2="290" class="arrow"/>
+<rect x="70" y="292" width="420" height="90" class="box"/><text x="90" y="322" class="body"><tspan>ecall → uservec → usertrap</tspan><tspan x="90" dy="25">syscall → sys_read · S态 · 内核栈</tspan></text>
+<line x1="280" y1="382" x2="280" y2="409" class="arrow"/>
+<rect x="70" y="411" width="420" height="100" class="box"/><text x="90" y="441" class="body"><tspan>consoleread：缓冲区为空</tspan><tspan x="90" dy="25">cons.lock → sleep_prepare</tspan><tspan x="90" dy="25">SLEEPING；p.lock 交给 scheduler</tspan></text>
+<line x1="280" y1="511" x2="280" y2="538" class="arrow"/>
+<rect x="70" y="540" width="420" height="78" class="box"/><text x="90" y="570" class="body"><tspan>scheduler / wfi</tspan><tspan x="90" dy="25">S态 · 调度器栈</tspan></text>
+<line x1="280" y1="618" x2="280" y2="645" class="arrow"/>
+<rect x="70" y="647" width="420" height="100" class="box"/><text x="90" y="677" class="body"><tspan>UART IRQ 10 → PLIC</tspan><tspan x="90" dy="25">consoleintr 写缓冲并 wakeup</tspan><tspan x="90" dy="25">持有 cons.lock</tspan></text>
+<rect x="70" y="795" width="420" height="105" class="note"/><text x="90" y="825" class="body"><tspan>个人思考1</tspan><tspan x="90" dy="25">先登记等待通道再释放 cons.lock，</tspan><tspan x="90" dy="25">避免检查与睡眠之间丢失唤醒。</tspan></text>
+<rect x="565" y="125" width="470" height="650" class="section"/><text x="590" y="160" class="label">2  fork、exec 与 wait</text>
+<rect x="590" y="185" width="420" height="78" class="box"/><text x="610" y="215" class="body"><tspan>Shell: parsecmd → fork</tspan><tspan x="610" dy="25">U态 · 用户栈</tspan></text>
+<line x1="800" y1="263" x2="800" y2="290" class="arrow"/>
+<rect x="590" y="292" width="420" height="90" class="box"/><text x="610" y="322" class="body"><tspan>sys_fork → kfork</tspan><tspan x="610" dy="25">复制页表、trapframe、ofile · S态</tspan></text>
+<line x1="800" y1="382" x2="800" y2="409" class="arrow"/>
+<rect x="590" y="411" width="420" height="82" class="box"/><text x="610" y="441" class="body"><tspan>父：fork 返回 child pid</tspan><tspan x="610" dy="25">wait 无 ZOMBIE → SLEEPING</tspan></text>
+<rect x="590" y="510" width="420" height="90" class="box"/><text x="610" y="540" class="body"><tspan>子：fork 返回 0 → exec(echo)</tspan><tspan x="610" dy="25">U态 → S态 · 子进程内核栈</tspan></text>
+<line x1="800" y1="493" x2="800" y2="510" class="dash"/>
+<line x1="800" y1="600" x2="800" y2="627" class="arrow"/>
+<rect x="590" y="629" width="420" height="100" class="box"/><text x="610" y="659" class="body"><tspan>kexec：ELF、guard、stack</tspan><tspan x="610" dy="25">成功后提交 pagetable / sz / epc / sp</tspan><tspan x="610" dy="25">userret → sret → echo main</tspan></text>
+<rect x="590" y="795" width="420" height="105" class="note"/><text x="610" y="825" class="body"><tspan>个人思考2</tspan><tspan x="610" dy="25">exec 先构造新镜像，失败时</tspan><tspan x="610" dy="25">原地址空间仍可用。</tspan></text>
+<rect x="1085" y="125" width="470" height="650" class="section"/><text x="1110" y="160" class="label">3  write、exit 与回收</text>
+<rect x="1110" y="185" width="420" height="78" class="box"/><text x="1130" y="215" class="body"><tspan>echo: write(1)</tspan><tspan x="1130" dy="25">U态 · 用户栈</tspan></text>
+<line x1="1320" y1="263" x2="1320" y2="290" class="arrow"/>
+<rect x="1110" y="292" width="420" height="90" class="box"/><text x="1130" y="322" class="body"><tspan>sys_write → filewrite</tspan><tspan x="1130" dy="25">devsw[1].write → consolewrite · S态</tspan></text>
+<line x1="1320" y1="382" x2="1320" y2="409" class="arrow"/>
+<rect x="1110" y="411" width="420" height="82" class="box"/><text x="1130" y="441" class="body"><tspan>uartwrite：轮询 UART THR</tspan><tspan x="1130" dy="25">写入后等待发送完成</tspan></text>
+<line x1="1320" y1="493" x2="1320" y2="520" class="arrow"/>
+<rect x="1110" y="522" width="420" height="82" class="box"/><text x="1130" y="552" class="body"><tspan>屏幕显示 hi</tspan><tspan x="1130" dy="25">UART 中断可唤醒等待者</tspan></text>
+<line x1="1320" y1="604" x2="1320" y2="631" class="arrow"/>
+<rect x="1110" y="633" width="420" height="82" class="box"/><text x="1130" y="663" class="body"><tspan>exit → fileclose → ZOMBIE</tspan><tspan x="1130" dy="25">wakeup(parent)；sched</tspan></text>
+<rect x="1110" y="795" width="420" height="105" class="note"/><text x="1130" y="825" class="body"><tspan>个人思考3</tspan><tspan x="1130" dy="25">ZOMBIE 只保留 wait 所需状态，</tspan><tspan x="1130" dy="25">不等于资源泄漏。</tspan></text>
+<path d="M490 695 H545 V224 H590" class="arrow"/><path d="M1010 679 H1065 V224 H1110" class="arrow"/>
+<text x="52" y="950" class="sub">箭头表示控制流；虚线表示并行关系或个人批注。图源与说明见同目录 .mmd / .md。</text>
+</svg>

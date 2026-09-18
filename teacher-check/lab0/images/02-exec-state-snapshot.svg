@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<style>text{font-family:Arial,"Microsoft YaHei",sans-serif;fill:#000}.title{font-size:32px;font-weight:700}.sub{font-size:18px}.head{font-size:19px;font-weight:700}.body{font-size:17px}.panel{fill:#fff;stroke:#000;stroke-width:2}.box{fill:#fff;stroke:#000;stroke-width:1.5}.note{fill:#fff;stroke:#000;stroke-width:1;stroke-dasharray:6 4}.line{stroke:#000;stroke-width:2;fill:none}</style>
+<rect width="1600" height="1000" fill="#fff"/>
+<text x="55" y="58" class="title">Lab0  exec 完成时的数据结构快照</text>
+<text x="55" y="90" class="sub">截面：kexec 已提交 echo 新镜像，但尚未执行首条用户指令 · 黑白版</text>
+<rect x="55" y="125" width="1490" height="88" class="panel"/>
+<text x="80" y="158" class="body"><tspan>Lab0 · 杜浩源 · 2024302111427</tspan><tspan x="80" dy="26">S态 · echo 内核栈 · echo=RUNNING</tspan></text>
+
+<rect x="55" y="250" width="450" height="650" class="panel"/><text x="80" y="286" class="head">1  struct proc 进程表</text>
+<rect x="80" y="310" width="400" height="120" class="box"/><text x="100" y="342" class="body"><tspan>init</tspan><tspan x="100" dy="24">state=SLEEPING · parent=无</tspan><tspan x="100" dy="24">pagetable=PT_init · sz=init映像</tspan><tspan x="100" dy="24">ofile[0..2]=F_console</tspan></text>
+<line x1="280" y1="430" x2="280" y2="450" class="line"/>
+<rect x="80" y="452" width="400" height="120" class="box"/><text x="100" y="484" class="body"><tspan>shell</tspan><tspan x="100" dy="24">state=SLEEPING(wait) · parent=init</tspan><tspan x="100" dy="24">pagetable=PT_shell · sz=sh映像</tspan><tspan x="100" dy="24">ofile[0..2]=F_console</tspan></text>
+<line x1="280" y1="572" x2="280" y2="592" class="line"/>
+<rect x="80" y="594" width="400" height="120" class="box"/><text x="100" y="626" class="body"><tspan>echo</tspan><tspan x="100" dy="24">state=RUNNING · parent=shell</tspan><tspan x="100" dy="24">pagetable=PT_echo · sz=0x4000</tspan><tspan x="100" dy="24">ofile[0..2]=F_console</tspan></text>
+<text x="80" y="756" class="body">箭头：parent 关系自下而上</text>
+
+<rect x="550" y="250" width="505" height="650" class="panel"/><text x="575" y="286" class="head">2  echo 的 Sv39 页表</text>
+<text x="575" y="320" class="body">PT_echo → L2[0] → L1[0] → L0</text>
+<rect x="575" y="340" width="455" height="58" class="box"/><text x="595" y="376" class="body">0x0000–0x0fff  text/rodata   V R X U</text>
+<rect x="575" y="410" width="455" height="58" class="box"/><text x="595" y="446" class="body">0x1000–0x1fff  data/bss      V R W U</text>
+<rect x="575" y="480" width="455" height="58" class="box"/><text x="595" y="516" class="body">0x2000–0x2fff  guard        V R W；U=0</text>
+<rect x="575" y="550" width="455" height="58" class="box"/><text x="595" y="586" class="body">0x3000–0x3fff  user stack   V R W U</text>
+<text x="575" y="640" class="body">PT_echo → L2[255] → L1[511] → L0</text>
+<rect x="575" y="655" width="455" height="58" class="box"/><text x="595" y="691" class="body">TRAPFRAME    0x3fffffe000   V R W；U=0</text>
+<rect x="575" y="725" width="455" height="58" class="box"/><text x="595" y="761" class="body">TRAMPOLINE   0x3ffffff000   V R X；U=0</text>
+
+<rect x="1100" y="250" width="445" height="650" class="panel"/><text x="1125" y="286" class="head">3  stdout 引用链</text>
+<rect x="1125" y="330" width="395" height="75" class="box"/><text x="1145" y="360" class="body"><tspan>init / shell / echo</tspan><tspan x="1145" dy="25">ofile[0], ofile[1], ofile[2]</tspan></text>
+<line x1="1322" y1="405" x2="1322" y2="432" class="line"/>
+<rect x="1125" y="434" width="395" height="82" class="box"/><text x="1145" y="466" class="body"><tspan>F_console · FD_DEVICE · ref=9</tspan><tspan x="1145" dy="25">major=1 · readable=1 · writable=1</tspan></text>
+<line x1="1322" y1="516" x2="1322" y2="543" class="line"/>
+<rect x="1125" y="545" width="395" height="70" class="box"/><text x="1145" y="575" class="body"><tspan>console inode</tspan><tspan x="1145" dy="24">T_DEVICE · major=1</tspan></text>
+<line x1="1322" y1="615" x2="1322" y2="642" class="line"/>
+<rect x="1125" y="644" width="395" height="95" class="box"/><text x="1145" y="676" class="body"><tspan>devsw[1].write</tspan><tspan x="1145" dy="24">consolewrite → uartwrite</tspan><tspan x="1145" dy="24">UART0 MMIO 0x10000000</tspan></text>
+<rect x="1125" y="755" width="395" height="105" class="note"/><text x="1145" y="785" class="body"><tspan>个人思考1：exec 不创建进程。</tspan><tspan x="1145" dy="24">个人思考2：guard 页清除 U 位。</tspan><tspan x="1145" dy="24">个人思考3：fork 对每个 fd 执行 filedup。</tspan></text>
+<text x="55" y="945" class="sub">所有字段均对应 lab0 阅读笔记中的同一截面；黑白线框用于区分对象，不表示额外状态。</text>
+</svg>

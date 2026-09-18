@@ -1,5 +1,5 @@
 Lab1 reproducible verification record
-Date: 2026-09-14 (Asia/Shanghai)
+Date: 2026-09-18 (Asia/Shanghai)
 Repository: hoyuand/os-A---2024302111427
 Source commit: resolve `lab1` with `git rev-parse lab1`
 Branch/tag invariant: `main` and `lab1` resolve to the same commit after push
@@ -15,10 +15,13 @@ Results
 -------
 Build: PASS (riscv64-unknown-elf-gcc + riscv64-unknown-elf-ld)
 Shape checker: PASS (sid=2024302111427, protocol=2)
-Unit tests: PASS (6 tests, including all Lab0 regressions)
+Unit tests: PASS (9 tests, including all Lab0 regressions and evidence-layout checks)
 UART capture: PASS (259 bytes match expect_banner.txt)
 Reboot idempotence: PASS (two cold boots identical)
 QEMU -d int: PASS (empty trap log)
+
+The direct stdout capture is recorded in lab1-qemu-real-run.txt and rendered as
+lab1-terminal-run.png; the latter is a screenshot of that command output, not a generated illustration.
 
 The generated local archive is 提交-lab1-2024302111427.zip. It is intentionally ignored by
 Git because it is a derived archive; the source commit and tag are the canonical record.

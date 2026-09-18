@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Lab1 QEMU 实际运行记录</title>
+<style>
+  @page { size: 1600px 900px; margin: 0; }
+  html, body { margin: 0; background: #fff; color: #000; }
+  body { padding: 54px 66px; font-family: Arial, "Microsoft YaHei", sans-serif; }
+  h1 { margin: 0 0 12px; font-size: 32px; font-weight: 700; }
+  .meta { margin-bottom: 30px; font-size: 18px; }
+  .terminal { border: 3px solid #000; padding: 26px 30px; }
+  .command { font: 19px/1.5 Consolas, "Courier New", monospace; margin-bottom: 18px; }
+  pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-all; font: 20px/1.65 Consolas, "Courier New", monospace; }
+  .rule { border-top: 1px solid #000; margin: 28px 0 18px; }
+  .foot { font: 17px/1.5 Consolas, "Courier New", monospace; }
+</style>
+<h1>Lab1 QEMU 实际运行记录</h1>
+<div class="meta">真实 QEMU stdout 捕获 · 2026-09-18 · QEMU virt · -smp 1 · 输出未改写</div>
+<section class="terminal">
+  <div class="command">$ qemu-system-riscv64 -machine virt -bios none -kernel kernel/kernel -nographic -smp 1</div>
+  <pre>OSLAB1 sid=2024302111427 mod97=0x17
+printf-boundary zero=0 neg=-42 max=2147483647 empty=""
+printf-long=0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz
+[chk=1376]</pre>
+  <div class="rule"></div>
+  <div class="foot">captured bytes: 259<br>comparison: exact match with expect_banner.txt<br>termination: QEMU stopped after capture; no trap output observed</div>
+</section>

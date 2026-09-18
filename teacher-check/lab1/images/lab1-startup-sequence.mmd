@@ -1,0 +1,12 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial, Microsoft YaHei, sans-serif","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","secondaryColor":"#ffffff","tertiaryColor":"#ffffff"},"flowchart":{"nodeSpacing":34,"rankSpacing":48,"curve":"linear"}}}%%
+flowchart LR
+  classDef plain fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px
+  classDef note fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px,stroke-dasharray:4 3
+  e["_entry\nM 态"]:::plain --> p["PMP 配置\n允许 S 态访问"]:::plain
+  p --> t["设置 medeleg / mideleg\n设置 stvec"]:::plain
+  t --> r["mret\n切换到 S 态"]:::plain
+  r --> s["start\n关闭分页，设置 satp=Bare"]:::plain
+  s --> u["UART 初始化\n轮询发送启动信息"]:::plain
+  u --> m["main\n输出 banner 与 printf 自检"]:::plain
+  n["个人核对：Lab1 的输出证据来自 QEMU stdout；\n本图只说明启动路径，不替代运行截图。"]:::note
+  s -.-> n

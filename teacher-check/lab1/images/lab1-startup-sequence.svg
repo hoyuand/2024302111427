@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#000000"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <text x="72" y="74" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="38" font-weight="700">Lab1 启动路径</text>
+  <text x="72" y="116" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">从 M 态入口到 S 态 C 代码，再到 UART 与 main；黑白矢量图，便于现场逐项解释</text>
+
+  <rect x="72" y="174" width="240" height="112" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="112" y="222" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="28" font-weight="700">_entry</text>
+  <text x="112" y="260" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">M 态 · 汇编入口</text>
+
+  <rect x="372" y="174" width="240" height="112" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="412" y="222" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="25" font-weight="700">PMP</text>
+  <text x="412" y="260" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">授权 S 态访问</text>
+
+  <rect x="672" y="174" width="240" height="112" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="712" y="222" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="25" font-weight="700">委托与向量</text>
+  <text x="712" y="260" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">medeleg · mideleg · stvec</text>
+
+  <rect x="972" y="174" width="240" height="112" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="1012" y="222" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="25" font-weight="700">mret</text>
+  <text x="1012" y="260" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">切换到 S 态</text>
+
+  <rect x="1272" y="174" width="240" height="112" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="1312" y="222" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="25" font-weight="700">start</text>
+  <text x="1312" y="260" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">satp=Bare · 关分页</text>
+
+  <line x1="312" y1="230" x2="372" y2="230" stroke="#000000" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="612" y1="230" x2="672" y2="230" stroke="#000000" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="912" y1="230" x2="972" y2="230" stroke="#000000" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="1212" y1="230" x2="1272" y2="230" stroke="#000000" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <line x1="1392" y1="286" x2="1392" y2="394" stroke="#000000" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="1272" y="394" width="240" height="112" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="1312" y="442" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="25" font-weight="700">UART</text>
+  <text x="1312" y="480" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">初始化与轮询发送</text>
+
+  <line x1="1272" y1="450" x2="1132" y2="450" stroke="#000000" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="852" y="394" width="280" height="112" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="892" y="442" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="25" font-weight="700">main</text>
+  <text x="892" y="480" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">banner 与 printf 自检</text>
+
+  <rect x="72" y="594" width="1440" height="184" fill="#ffffff" stroke="#000000" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="104" y="642" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="24" font-weight="700">现场核对点</text>
+  <text x="104" y="684" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">1. _entry 写入 pmpaddr0 / pmpcfg0，并通过 mret 进入 S 态。</text>
+  <text x="104" y="720" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">2. start 清空 satp，UART 先初始化，main 再输出个性化 banner 与边界测试。</text>
+  <text x="104" y="756" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">3. 运行证据以 lab1-terminal-run.png 和 docs/lab1-qemu-real-run.html 为准；本图不替代真实输出。</text>
+</svg>

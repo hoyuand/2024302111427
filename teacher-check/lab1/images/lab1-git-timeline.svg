@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="650" viewBox="0 0 1400 650">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#000000"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="650" fill="#ffffff"/>
+  <text x="64" y="72" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="38" font-weight="700">Lab1 Git 归档时间线</text>
+  <text x="64" y="112" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="20">本图只记录可由 Git 命令复核的提交、标签和后续扩展位置</text>
+
+  <line x1="148" y1="292" x2="1250" y2="292" stroke="#000000" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <circle cx="220" cy="292" r="34" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="203" y="302" fill="#000000" font-family="Arial,sans-serif" font-size="20" font-weight="700">01</text>
+  <text x="160" y="220" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="27" font-weight="700">lab0</text>
+  <text x="136" y="356" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="18">3e297e8</text>
+  <text x="102" y="394" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="18">课程阅读与架构图</text>
+
+  <circle cx="700" cy="292" r="34" fill="#000000" stroke="#000000" stroke-width="3"/>
+  <text x="683" y="302" fill="#ffffff" font-family="Arial,sans-serif" font-size="20" font-weight="700">02</text>
+  <text x="642" y="220" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="27" font-weight="700">lab1</text>
+  <text x="588" y="356" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="18">main + tag lab1</text>
+  <text x="532" y="394" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="18">启动、UART、printf、证据</text>
+
+  <circle cx="1160" cy="292" r="34" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+  <text x="1143" y="302" fill="#000000" font-family="Arial,sans-serif" font-size="20" font-weight="700">03</text>
+  <text x="1094" y="220" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="27" font-weight="700">后续</text>
+  <text x="1082" y="356" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="18">lab2 … labN</text>
+  <text x="1016" y="394" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="18">沿用同一提交与证据规范</text>
+
+  <rect x="64" y="482" width="1272" height="94" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  <text x="90" y="520" fill="#000000" font-family="Consolas,Microsoft YaHei,monospace" font-size="18">git add . → git commit → git tag labN → git push origin main → git push origin labN</text>
+  <text x="90" y="554" fill="#000000" font-family="Arial,Microsoft YaHei,sans-serif" font-size="18">推送后用 git ls-remote 校验远端 main 与 labN 是否指向同一对象；证明文件位于 teacher-check/lab1/docs/。</text>
+</svg>

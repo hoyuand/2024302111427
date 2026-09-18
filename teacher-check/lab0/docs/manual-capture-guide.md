@@ -1,6 +1,6 @@
 # Lab0 软件图纸与截图指南
 
-课程原文要求三张图“自己理解并亲手绘制”，没有限定纸笔。任课教师允许软件绘图时，可直接提交本仓库 `figures/` 中的 Mermaid 图纸；现场验收前必须逐条检查并能脱离图稿说明因果关系。
+课程原文要求三张图“自己理解并亲手绘制”，没有限定纸笔。任课教师允许软件绘图时，可直接提交本目录 `teacher-check/lab0/images/` 中的 Mermaid 图纸；现场验收前必须逐条检查并能脱离图稿说明因果关系。
 
 ## 一 图纸文件
 
@@ -13,9 +13,9 @@
 对应关系：
 
 ```text
-figures/01-echo-control-flow.*
-figures/02-exec-state-snapshot.*
-figures/03-timer-interrupt-journey.*
+teacher-check/lab0/images/01-echo-control-flow.*
+teacher-check/lab0/images/02-exec-state-snapshot.*
+teacher-check/lab0/images/03-timer-interrupt-journey.*
 ```
 
 如需自行修改，打开 <https://mermaid.live/>，粘贴 `.mmd` 内容并编辑。修改后同时更新 `.svg` 和 `.png`，避免源文件与图片不一致。
@@ -55,7 +55,7 @@ python3 tools/preflight.py
 
 3. 调整窗口高度，使标题、命令和结论同时可见。
 4. 按 `Win + Shift + S`，框选完整终端窗口。
-5. 保存为 `evidence/screenshots/01-preflight.png`。
+5. 保存为 `teacher-check/lab0/images/01-preflight.png`。
 
 ## 四 获取 Git 与标签截图
 
@@ -68,13 +68,13 @@ git tag --list
 git remote -v
 ```
 
-将命令和结果完整截入一张图，保存为 `evidence/screenshots/02-git-proof.png`。截图中应能看到 `lab0`、clean 工作区和 `origin`。
+将命令和结果完整截入一张图，保存为 `teacher-check/lab0/images/02-git-proof.png`。截图中应能看到 `lab0`、clean 工作区和 `origin`。
 
 ## 五 获取 GitHub 截图
 
 1. 打开 <https://github.com/hoyuand/os-A---2024302111427>。
-2. 截取仓库首页，确保文件列表包含 `figures`、`notes`、`evidence`、`kernel`，保存为 `evidence/screenshots/03-github-repository.png`。
-3. 打开 Tags 页面，确认 `lab0` 存在，保存为 `evidence/screenshots/04-github-lab0-tag.png`。
+2. 截取仓库首页，确保文件列表包含 `teacher-check`、`kernel`、`README.md`，保存为 `teacher-check/lab0/images/03-github-repository.png`。
+3. 打开 Tags 页面，确认 `lab0` 存在，保存为 `teacher-check/lab0/images/04-github-lab0-tag.png`。
 
 GitHub 会移除仓库名中的中文字符，因此 URL 中显示 `os-A---2024302111427`；课程项目全称保留在 README 标题和仓库描述中。
 

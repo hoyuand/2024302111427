@@ -1,0 +1,48 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial, Microsoft YaHei, sans-serif","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","secondaryColor":"#ffffff","tertiaryColor":"#ffffff"},"flowchart":{"nodeSpacing":30,"rankSpacing":44,"curve":"linear"}}}%%
+flowchart LR
+  classDef plain fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px
+  classDef note fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px,stroke-dasharray:4 3
+  moment["Lab0 | 杜浩源 | 2024302111427\n截面：kexec提交echo新镜像，尚未执行首条用户指令\nS态 | echo内核栈 | echo=RUNNING"]:::plain
+  subgraph PROCS[1 struct proc]
+    direction TB
+    init["init\nstate=SLEEPING | parent=无\npagetable=PT_init | sz=init映像\nofile[0..2]=F_console"]:::plain
+    shell["shell\nstate=SLEEPING(wait) | parent=init\npagetable=PT_shell | sz=sh映像\nofile[0..2]=F_console"]:::plain
+    echo["echo\nstate=RUNNING | parent=shell\npagetable=PT_echo | sz=0x4000\nofile[0..2]=F_console"]:::plain
+    echo -->|parent| shell -->|parent| init
+  end
+  subgraph SV39[2 echo的 Sv39 页表]
+    direction TB
+    pt["PT_echo 根页表 L2"]:::plain
+    low["L2[0] → L1[0] → L0"]:::plain
+    p0["0x0000–0x0fff text/rodata\nV R X U"]:::plain
+    p1["0x1000–0x1fff data/bss\nV R W U"]:::plain
+    p2["0x2000–0x2fff guard\nV R W；U=0"]:::plain
+    p3["0x3000–0x3fff user stack\nV R W U"]:::plain
+    high["L2[255] → L1[511] → L0"]:::plain
+    tf["TRAPFRAME\n0x3fffffe000 | V R W；U=0"]:::plain
+    tr["TRAMPOLINE\n0x3ffffff000 | V R X；U=0"]:::plain
+    pt --> low --> p0
+    low --> p1
+    low --> p2
+    low --> p3
+    pt --> high --> tf
+    high --> tr
+  end
+  subgraph FILES[3 stdout 引用链]
+    direction TB
+    ofs["init/shell/echo\nofile[0], ofile[1], ofile[2]"]:::plain
+    fc["F_console\nFD_DEVICE | ref=9 | major=1"]:::plain
+    ino["console inode\nT_DEVICE | major=1"]:::plain
+    dev["devsw[1].write\nconsolewrite → uartwrite\nUART0 MMIO 0x10000000"]:::plain
+    ofs -->|9个fd引用| fc -->|ip| ino
+    fc -->|major索引| dev
+  end
+  moment --> echo
+  echo --> pt
+  echo --> ofs
+  n1["个人思考1：exec 不创建进程；PID、parent、ofile 不变。"]:::note
+  n2["个人思考2：guard 页保留映射但清除 U 位。"]:::note
+  n3["个人思考3：fork 对每个 fd 调用 filedup，引用计数仍准确。"]:::note
+  echo -.-> n1
+  p2 -.-> n2
+  fc -.-> n3

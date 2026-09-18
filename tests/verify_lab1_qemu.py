@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 QEMU = "qemu-system-riscv64"
 BASE_ARGS = [
     QEMU, "-machine", "virt", "-bios", "none",
-    "-kernel", str(ROOT / "kernel" / "kernel"), "-nographic",
+    "-kernel", str(ROOT / "kernel" / "kernel"), "-nographic", "-smp", "1",
 ]
 
 
