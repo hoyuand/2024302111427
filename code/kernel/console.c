@@ -40,6 +40,12 @@ uartinit(void)
   tx_count = 0;
 }
 
+void
+consoleinit(void)
+{
+  uartinit();
+}
+
 static void
 uart_throttle(void)
 {
@@ -67,7 +73,7 @@ uartputc_sync(int c)
 }
 
 void
-console_raw_putc(int c)
+consputc(int c)
 {
   uartputc_sync(c);
   if (checksum_enabled)
@@ -75,10 +81,16 @@ console_raw_putc(int c)
 }
 
 void
+console_raw_putc(int c)
+{
+  consputc(c);
+}
+
+void
 console_raw_puts(const char *s)
 {
   while (*s)
-    console_raw_putc((uchar)*s++);
+    consputc((uchar)*s++);
 }
 
 void

@@ -5,7 +5,7 @@ Lab1 完成启动汇编、M 态到 S 态切换、PMP 授权、UART 轮询输出�
 ## 图片
 
 * `images/lab1-terminal-run.png`：真实 Windows Terminal 截图，包含 QEMU 命令和实际 stdout；
-* `images/lab1-startup-sequence.png`：启动路径图，说明 `_entry`、PMP、`mret`、`start`、UART 和 `main` 的关系。
+* `images/lab1-startup-sequence.png`：启动路径图，说明 `_entry`、PMP、`mret`、`start`、`consoleinit`、UART 和 `main` 的关系。
 
 启动路径图的 Mermaid 源文件为 `images/lab1-startup-sequence.mmd`。
 

@@ -8,7 +8,7 @@ sequenceDiagram
   participant P as yield / sched
   participant S as scheduler / 调度器栈
   participant R as prepare_return / userret
-  Note over U,R: Lab0 | 杜浩源 | 2024302111427 | 用户态时钟中断
+  Note over U,R: 用户态时钟中断闭环：scause 最高位为 1，cause=5
   H->>V: scause=0x8000000000000005；sepc=用户pc
   V->>V: 保存全部寄存器到 TRAPFRAME
   V->>T: 读取 kernel_sp / kernel_satp；进入 usertrap
@@ -17,7 +17,7 @@ sequenceDiagram
   T->>P: 定时器事件 → yield
   P->>P: 持 p.lock；RUNNING → RUNNABLE
   P->>S: sched → swtch；切换到 scheduler
-  S->>S: 扫描 RUNNABLE；释放旧 p.lock
+  S->>S: 使用独立调度器栈扫描 RUNNABLE；释放旧 p.lock
   S->>P: 重新选择原进程；swtch 返回
   P->>T: yield 返回 usertrap
   T->>R: prepare_return
@@ -25,6 +25,6 @@ sequenceDiagram
   R->>R: userret 切用户页表并恢复寄存器
   R->>H: sret
   H->>U: 恢复用户 pc，继续原指令流
-  Note over V,T: 个人思考1：TRAMPOLINE在两套页表中同址映射，切satp后仍能继续取指。
-  Note over P,S: 个人思考2：p.lock跨swtch交接，避免进程栈状态不一致。
-  Note over R,U: 个人思考3：SPIE决定sret后的中断状态。
+  Note over S,P: 个人思考1（独立调度器栈）：<br/>scheduler 不能继续使用被切出进程的内核栈；<br/>否则进程退出或释放栈后，调度器上下文会失效。
+  Note over V,T: 个人思考2（两类保存区）：<br/>TRAPFRAME 保存用户寄存器；swtch 的 context 只保存 14 个 callee-saved 寄存器，职责不同。
+  Note over P,S: 个人思考3（p.lock 交接）：<br/>yield 在 RUNNING→RUNNABLE 期间持锁，锁的交接跨越 swtch，避免状态与栈不一致。

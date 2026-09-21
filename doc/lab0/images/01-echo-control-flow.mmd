@@ -1,48 +1,48 @@
 %%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial, Microsoft YaHei, sans-serif","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","secondaryColor":"#ffffff","tertiaryColor":"#ffffff"},"flowchart":{"nodeSpacing":28,"rankSpacing":42,"curve":"linear"}}}%%
-flowchart LR
+flowchart TD
   classDef plain fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px
   classDef note fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px,stroke-dasharray:4 3
 
-  subgraph INPUT[1 输入与唤醒]
+  subgraph INPUT["一 输入与唤醒"]
     direction TB
-    i1["Shell: read(0)<br/>U态 | 用户栈 | 无锁"]:::plain
-    i2["ecall → uservec → usertrap<br/>syscall → sys_read<br/>S态 | 内核栈"]:::plain
-    i3["consoleread<br/>cons.lock → sleep_prepare<br/>SLEEPING；p.lock交给scheduler"]:::plain
-    i4["scheduler / wfi<br/>S态 | 调度器栈"]:::plain
-    i5["UART IRQ 10 → PLIC<br/>consoleintr写缓冲并wakeup<br/>持有 cons.lock"]:::plain
-    i6["Shell RUNNABLE → RUNNING<br/>read返回 → userret → sret<br/>U态 | 用户栈"]:::plain
+    i1["Shell read(0)<br/>U态｜用户栈"]:::plain
+    i2["ecall → uservec → usertrap<br/>syscall → sys_read<br/>S态｜进程内核栈"]:::plain
+    i3["consoleread：登记 &cons.r<br/>释放 cons.lock 后 sleep<br/>SLEEPING → scheduler"]:::plain
+    i4["scheduler / wfi<br/>S态｜调度器栈"]:::plain
+    i5["UART 外部中断 → PLIC<br/>consoleintr 写缓冲并 wakeup"]:::plain
+    i6["Shell RUNNABLE → RUNNING<br/>read 返回 → userret → sret<br/>U态｜用户栈"]:::plain
     i1 --> i2 --> i3 --> i4 --> i5 --> i6
   end
 
-  subgraph CREATE[2 fork、exec 与 wait]
+  subgraph CREATE["二 fork、exec 与 wait"]
     direction TB
-    f1["Shell: parsecmd → fork<br/>U态 | 用户栈"]:::plain
-    f2["sys_fork → kfork<br/>复制页表、trapframe、ofile<br/>S态 | 内核栈"]:::plain
-    f3["父：fork返回 child pid<br/>wait无ZOMBIE → SLEEPING"]:::plain
-    f4["子：fork返回 0 → exec(echo)<br/>U态 → S态"]:::plain
-    f5["kexec：ELF、guard、stack<br/>成功后提交 pagetable / sz / epc / sp"]:::plain
-    f6["userret → sret → echo main<br/>U态 | 用户栈"]:::plain
+    f1["Shell parsecmd → fork<br/>U态｜用户栈"]:::plain
+    f2["sys_fork → kfork<br/>复制页表、trapframe、ofile<br/>S态｜进程内核栈"]:::plain
+    f3["父：fork 返回 child pid<br/>wait 无 ZOMBIE → SLEEPING"]:::plain
+    f4["子：fork 返回 0（a0=0）<br/>exec(echo)｜U态 → S态"]:::plain
+    f5["kexec：加载 ELF、guard、stack<br/>成功后提交 pagetable / sz / epc / sp"]:::plain
+    f6["userret → sret → echo main<br/>U态｜用户栈"]:::plain
     f1 --> f2
     f2 -->|父| f3
     f2 -->|子| f4 --> f5 --> f6
   end
 
-  subgraph OUTPUT[3 write、exit 与回收]
+  subgraph OUTPUT["三 write、exit 与回收"]
     direction TB
-    o1["echo: write(1)<br/>U态 | 用户栈"]:::plain
-    o2["sys_write → filewrite<br/>devsw[1].write → consolewrite<br/>S态 | 内核栈"]:::plain
-    o3["uartwrite：轮询 UART THR<br/>写入后等待发送完成"]:::plain
-    o4["屏幕显示 hi<br/>UART 中断可唤醒等待者"]:::plain
+    o1["echo：write(1, hi)<br/>U态｜用户栈"]:::plain
+    o2["sys_write → filewrite<br/>devsw[1].write → consolewrite<br/>S态｜进程内核栈"]:::plain
+    o3["uartwrite：轮询 UART THR<br/>输出 hi 和换行"]:::plain
+    o4["终端显示 hi<br/>write 返回用户态"]:::plain
     o5["exit → fileclose → ZOMBIE<br/>wakeup(parent)；sched"]:::plain
-    o6["父 wait 找到 ZOMBIE<br/>freeproc 回收；继续 getcmd"]:::plain
+    o6["父 wait 找到 ZOMBIE<br/>freeproc 回收 → getcmd → 下一提示符"]:::plain
     o1 --> o2 --> o3 --> o4 --> o5 --> o6
   end
 
   i6 --> f1 --> o1
   f3 -.->|echo退出后唤醒| o6
-  n1["个人思考1：先登记等待通道再释放 cons.lock，避免丢失唤醒。"]:::note
-  n2["个人思考2：exec 先构造新镜像，失败时原地址空间仍可用。"]:::note
-  n3["个人思考3：ZOMBIE 只保留 wait 所需状态，不等于资源泄漏。"]:::note
-  i3 -.-> n1
-  f5 -.-> n2
+  n1["个人思考1（fork 返回两次）：<br/>父子复制同一条 ecall 后的用户指令流；<br/>内核把子 trapframe 的 a0 改为 0，父 a0 保留子 PID。"]:::note
+  n2["个人思考2（阻塞）：<br/>先登记等待通道再释放 cons.lock，<br/>避免 UART 唤醒与睡眠之间丢失事件。"]:::note
+  n3["个人思考3（ZOMBIE）：<br/>exit 先释放可释放资源，保留 PID 与退出状态，<br/>直到父 wait 调用 freeproc。"]:::note
+  f2 -.-> n1
+  i3 -.-> n2
   o5 -.-> n3
