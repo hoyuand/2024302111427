@@ -1,0 +1,5 @@
+boot ok
+EXPECT 'sh>': PASS
+EXPECT 'BUFSTORM lines=4 bytes=8': PASS
+EXPECT 'sh>': PASS
+log → /tmp/lab2-bufstorm-run.log;EXPECT 失败 0 条

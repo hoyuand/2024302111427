@@ -1,0 +1,77 @@
+[command] make clean && make
+rm -f kernel/*.o kernel/kernel user/usys.S
+rm -rf user-flat
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/entry.o kernel/entry.S
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/start.o kernel/start.c
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/console.o kernel/console.c
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/printf.o kernel/printf.c
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/main.o kernel/main.c
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/proc.o kernel/proc.c
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/syscall.o kernel/syscall.c
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/trap.o kernel/trap.c
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/trampoline.o kernel/trampoline.S
+perl user/usys.pl > user/usys.S
+mkdir -p user-flat
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/ulib.c   -o user-flat/ulib.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/printf.c -o user-flat/printf.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/usys.S   -o user-flat/usys.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/sh.c            -o user-flat/sh.o
+riscv64-unknown-elf-ld -T user/user.ld -o user-flat/sh.elf \
+    user-flat/sh.o user-flat/ulib.o user-flat/printf.o user-flat/usys.o
+riscv64-unknown-elf-ld: warning: user-flat/sh.elf has a LOAD segment with RWX permissions
+riscv64-unknown-elf-objcopy -O binary user-flat/sh.elf user-flat/sh.bin
+mkdir -p user-flat
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/ulib.c   -o user-flat/ulib.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/printf.c -o user-flat/printf.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/usys.S   -o user-flat/usys.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/hi.c            -o user-flat/hi.o
+riscv64-unknown-elf-ld -T user/user.ld -o user-flat/hi.elf \
+    user-flat/hi.o user-flat/ulib.o user-flat/printf.o user-flat/usys.o
+riscv64-unknown-elf-objcopy -O binary user-flat/hi.elf user-flat/hi.bin
+mkdir -p user-flat
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/ulib.c   -o user-flat/ulib.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/printf.c -o user-flat/printf.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/usys.S   -o user-flat/usys.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/spin.c            -o user-flat/spin.o
+riscv64-unknown-elf-ld -T user/user.ld -o user-flat/spin.elf \
+    user-flat/spin.o user-flat/ulib.o user-flat/printf.o user-flat/usys.o
+riscv64-unknown-elf-objcopy -O binary user-flat/spin.elf user-flat/spin.bin
+mkdir -p user-flat
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/ulib.c   -o user-flat/ulib.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/printf.c -o user-flat/printf.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/usys.S   -o user-flat/usys.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/badecall.c            -o user-flat/badecall.o
+riscv64-unknown-elf-ld -T user/user.ld -o user-flat/badecall.elf \
+    user-flat/badecall.o user-flat/ulib.o user-flat/printf.o user-flat/usys.o
+riscv64-unknown-elf-objcopy -O binary user-flat/badecall.elf user-flat/badecall.bin
+mkdir -p user-flat
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/ulib.c   -o user-flat/ulib.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/printf.c -o user-flat/printf.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/usys.S   -o user-flat/usys.o
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -mno-relax -I. -Iuser -c user/bufstorm.c            -o user-flat/bufstorm.o
+riscv64-unknown-elf-ld -T user/user.ld -o user-flat/bufstorm.elf \
+    user-flat/bufstorm.o user-flat/ulib.o user-flat/printf.o user-flat/usys.o
+riscv64-unknown-elf-objcopy -O binary user-flat/bufstorm.elf user-flat/bufstorm.bin
+printf '.section .rodata\n .global _uprog_table\n_uprog_table:\n' > kernel/userimg.S.tmp
+for p in sh hi spin badecall bufstorm; do \
+  printf ' .quad _uprog_%s_start\n .quad _uprog_%s_end\n .asciz "%s"\n .balign 8\n' \
+    $p $p $p >> kernel/userimg.S.tmp; \
+  printf ' .global _uprog_%s_start\n_uprog_%s_start:\n .incbin "user-flat/%s.bin"\n .global _uprog_%s_end\n_uprog_%s_end:\n .balign 8\n' \
+    $p $p $p $p $p >> kernel/userimg.S.tmp; \
+done
+printf ' .quad 0\n .quad 0\n' >> kernel/userimg.S.tmp
+mv kernel/userimg.S.tmp kernel/userimg.S
+riscv64-unknown-elf-gcc -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie -Ikernel -c -o kernel/userimg.o kernel/userimg.S
+riscv64-unknown-elf-ld -T kernel/kernel.ld -o kernel/kernel kernel/entry.o kernel/start.o kernel/console.o kernel/printf.o kernel/main.o kernel/proc.o kernel/syscall.o kernel/trap.o kernel/trampoline.o kernel/userimg.o
+riscv64-unknown-elf-ld: warning: kernel/kernel has a LOAD segment with RWX permissions
+
+[command] qemu: hi + badecall
+OSLAB1 sid=2024302111427 mod97=0x17
+printf-boundary zero=0 neg=-42 max=2147483647 min=-2147483648 empty="" hex=0x2a percent=%
+printf-long=0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz
+[chk=3981]
+sh> hi
+hi: user program running, pid=2
+sh> badecall
+TEST-1 PASS: unknown syscalls all return -1
+sh> QEMU: Terminated

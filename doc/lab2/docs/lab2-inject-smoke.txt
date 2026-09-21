@@ -1,0 +1,9 @@
+OSLAB1 sid=2024302111427 mod97=0x17
+printf-boundary zero=0 neg=-42 max=2147483647 min=-2147483648 empty="" hex=0x2a percent=%
+printf-long=0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz
+[chk=3981]
+sh> hi
+hi: user program running, pid=2
+sh> badecall
+TEST-1 PASS: unknown syscalls all return -1
+sh>

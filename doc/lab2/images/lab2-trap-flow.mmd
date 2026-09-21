@@ -1,0 +1,19 @@
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#ffffff","primaryTextColor":"#111111","primaryBorderColor":"#111111","lineColor":"#111111","secondaryColor":"#ffffff","tertiaryColor":"#ffffff"}}}%%
+flowchart TD
+    U0["U: user program\necall / timer boundary"] --> H["Hardware\nscause, sepc, SPP"]
+    H --> V["S: s_trap_vector\nsscratch swap + save registers"]
+    V --> T["S: trapframe\nepc, a0-a7, kernel_sp"]
+    T --> D{"usertrap\nscause dispatch"}
+    D -->|ecall| C["syscall_dispatch\nsepc = sepc + 4"]
+    D -->|UART external| I["consoleintr\nPLIC claim + ring producer"]
+    D -->|timer| R["timer accounting\nreturn current process"]
+    C --> E["a0 result\nunknown number -> -1"]
+    I --> W["console_read\ncharacter-stream availability"]
+    R --> Q["sret preparation\nSPP=U, SPIE=1"]
+    E --> Q
+    W --> Q
+    Q --> X["S: userret_direct\nrestore trapframe"]
+    X --> U1["U: resume at epc"]
+    A["Analysis: sscratch protects user a0\nwhile trapframe becomes addressable"] -.-> V
+    classDef plain fill:#fff,stroke:#111,color:#111;
+    class U0,H,V,T,D,C,I,R,E,W,Q,X,U1 plain;

@@ -11,5 +11,6 @@
 
 * [Lab0：课程阅读、环境自检与架构图](lab0/)
 * [Lab1：启动、UART、printf 与 QEMU 验证](lab1/)
+* [Lab2：陷入、系统调用、中断驱动控制台与 Shell](lab2/)
 
 查看顺序建议：先看对应 Lab README，再看 `images/` 中的运行截图和图示，最后查看 `docs/` 中的结果与原始记录。

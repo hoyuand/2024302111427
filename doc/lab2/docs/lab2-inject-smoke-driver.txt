@@ -1,0 +1,7 @@
+boot ok
+EXPECT 'sh>': PASS
+EXPECT 'hi: user program running, pid=[0-9]+': PASS
+EXPECT 'sh>': PASS
+EXPECT 'TEST-1 PASS: unknown syscalls all return -1': PASS
+EXPECT 'sh>': PASS
+log → /tmp/lab2-inject-smoke-run.log;EXPECT 失败 0 条

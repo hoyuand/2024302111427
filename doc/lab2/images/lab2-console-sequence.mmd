@@ -1,0 +1,23 @@
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#ffffff","primaryTextColor":"#111111","primaryBorderColor":"#111111","lineColor":"#111111","actorBkg":"#ffffff","actorBorder":"#111111","actorTextColor":"#111111","signalColor":"#111111","signalTextColor":"#111111","noteBkgColor":"#ffffff","noteBorderColor":"#111111","noteTextColor":"#111111"}}}%%
+sequenceDiagram
+    participant U as U: gets/read
+    participant T as trampoline
+    participant S as S: syscall/read
+    participant C as UART/PLIC
+    participant B as ring[128]
+    U->>T: ecall, a7=read
+    T->>S: save trapframe, switch to kernel stack
+    S->>B: inspect input_count
+    alt empty
+        S->>S: enable interrupt and wait
+        C->>T: external interrupt
+        T->>S: consoleintr
+        S->>B: append byte, count newline
+    else available
+        S->>B: consume through newline
+    end
+    B-->>S: n bytes
+    S->>T: a0=n, restore registers
+    T-->>U: sret to next user instruction
+    Note over B: Analysis: full ring drops the oldest byte on overflow;
+    Note over U,S: Analysis: newline bounds one read even in character-stream mode.

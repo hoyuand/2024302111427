@@ -19,6 +19,6 @@ python3 code/tests/verify_lab1_qemu.py
 
 ## 结果
 
-构建通过；`consoleinit()`、`consputc()` 和 `uartputc_sync()` 的接口检查通过；资产和启动检查通过；QEMU 两次冷启动输出一致；串口输出与期望文件逐字节一致；边界行覆盖最小/最大整数、十六进制前缀、空字符串和 `%%`；`QEMU -d int` 日志为空。
+构建通过；`consoleinit()`、`consputc()` 和 `uartputc_sync()` 的接口检查通过；资产和启动检查通过；QEMU 两次冷启动的 Lab1 前缀一致；Lab1 前缀与期望文件逐字节一致。当前工作树同时包含后续 Lab2 用户程序，因此前缀后允许出现 `sh> ` 提示符；边界行覆盖最小/最大整数、十六进制前缀、空字符串和 `%%`。在合并后续实验代码的工作树上，`QEMU -d int` 仅记录已知的 `user_ecall` 和 `m_timer`，脚本会单独校验并标注这两类后续实验陷阱；Lab1-only 镜像则要求日志为空。
 
 归档标签：`lab1`、`lab1-submit`；归档命令见 `lab1-git-proof.txt`。

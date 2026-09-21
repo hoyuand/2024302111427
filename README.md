@@ -7,7 +7,7 @@
 | 目录 | 内容 | 检查入口 |
 |---|---|---|
 | [`code/`](code/) | 内核源码、构建文件、测试脚本和运行工具 | [`code/kernel/`](code/kernel/)、[`code/tests/`](code/tests/)、[`code/tools/`](code/tools/) |
-| [`course-config/`](course-config/) | 课程说明、个人参数和新版 Lab0/Lab1 要求对照 | [`course-config/README.md`](course-config/README.md) |
+| [`course-config/`](course-config/) | 课程说明、个人参数和各轮要求对照 | [`course-config/README.md`](course-config/README.md) |
 | [`doc/`](doc/) | 教师重点检查的实验结果、图片和文档 | [`doc/README.md`](doc/README.md) |
 
 ## 实验完成情况
@@ -16,9 +16,10 @@
 |---|---|---|
 | Lab0 | 完成课程代码阅读、环境自检，以及 `echo` 控制流、`exec` 状态快照、时钟中断旅程三张图 | [`doc/lab0/`](doc/lab0/) |
 | Lab1 | 完成启动汇编、M 态到 S 态切换、PMP、UART、`printf` 和个性化 banner，并通过 QEMU 回归检查 | [`doc/lab1/`](doc/lab1/) |
-| Lab2–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
+| Lab2 | 完成 U/S 态陷阱、系统调用、UART 输入环形缓冲、内嵌程序加载和最小进程生命周期 | [`doc/lab2/`](doc/lab2/) |
+| Lab3–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
 
-每个实验目录包含一个简短 README、`images/` 图片目录和 `docs/` 文档目录。图片使用 PNG 展示；需要修改的流程图同时保留 Mermaid 源文件。新版说明书的要求映射见 [`course-config/lab0-v2-requirements.md`](course-config/lab0-v2-requirements.md) 和 [`course-config/lab1-v2-requirements.md`](course-config/lab1-v2-requirements.md)。
+每个实验目录包含一个简短 README、`images/` 图片目录和 `docs/` 文档目录。图片使用 PNG 展示；需要修改的流程图同时保留 Mermaid 源文件。说明书要求映射集中保存在 [`course-config/`](course-config/)。
 
 ## 常用运行命令
 
@@ -32,6 +33,8 @@ python3 code/tests/verify_lab1_qemu.py
 ```
 
 Lab1 的真实 QEMU 运行截图位于 [`doc/lab1/images/lab1-terminal-run.png`](doc/lab1/images/lab1-terminal-run.png)，原始输出和验收说明位于 [`doc/lab1/docs/`](doc/lab1/docs/)。
+
+Lab2 的真实 QEMU 截图、trap 全景图、控制台时序图和原始输出位于 [`doc/lab2/`](doc/lab2/)；启动后可在 `sh>` 运行 `hi`、`badecall`、`spin` 和 `bufstorm`。
 
 ## Git 归档
 
@@ -55,7 +58,9 @@ git archive --format=zip -o 提交-lab1-2024302111427.zip lab1-submit
 git ls-remote --heads --tags origin refs/heads/main refs/tags/lab1 refs/tags/lab1-submit
 ```
 
-当前历史标签为 `lab0`、`lab1`、`lab1-submit`，新版归档命令记录在 [`doc/lab1/docs/lab1-git-proof.txt`](doc/lab1/docs/lab1-git-proof.txt)。
+截至 Lab1 的历史标签为 `lab0`、`lab1`、`lab1-submit`，新版归档命令记录在 [`doc/lab1/docs/lab1-git-proof.txt`](doc/lab1/docs/lab1-git-proof.txt)。
+
+Lab2 在本地使用 `lab2-start`、`lab2`、`lab2-submit` 并导出 `提交-lab2-2024302111427.zip`。本轮按要求不推送 GitHub；远端仍保持 Lab1 状态。
 
 ## 课程说明
 
