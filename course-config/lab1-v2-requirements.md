@@ -9,7 +9,7 @@
 | 链接/加载基址 `0x80000000` | [`code/kernel/kernel.ld`](../code/kernel/kernel.ld) | `make -C code` 后查看链接命令 |
 | M 态关闭中断、挂起从核、初始化栈 | [`code/kernel/entry.S`](../code/kernel/entry.S) | `test_startup_invariants_are_present` |
 | `LAB1_STACK_KB` 不硬编码 | [`code/kernel/course_sid.h`](../code/kernel/course_sid.h)、`entry.S` | 栈大小由学号参数宏参与汇编 |
-| PMP、委托寄存器、`satp=0`、`mret` | `entry.S`、[`code/kernel/start.c`](../code/kernel/start.c) | 启动图和静态测试 |
+| `start()` 配置 PMP、委托寄存器、`satp=0`、`mepc/mstatus` 并执行 `mret` | [`code/kernel/start.c`](../code/kernel/start.c) | 启动图和静态测试 |
 | UART `0x10000000`、LSR `0x10000005`、THRE `0x20` | [`code/kernel/console.c`](../code/kernel/console.c) | QEMU 真实终端截图 |
 
 ## 分阶段实现
@@ -17,7 +17,7 @@
 | 阶段 | 说明书验收现象 | 当前实现/证据 |
 |---|---|---|
 | 一 | 初始栈与裸机单字符输出 | `entry.S` 栈和主核路径保留在最终实现中 |
-| 二 | M 态切换到 S 态并输出 | `PMP + mret + start()`，见 [`doc/lab1/images/lab1-startup-sequence.png`](../doc/lab1/images/lab1-startup-sequence.png) |
+| 二 | M 态切换到 S 态并输出 | `start()` 中完成 `PMP + mret`，见 [`doc/lab1/images/lab1-startup-sequence.png`](../doc/lab1/images/lab1-startup-sequence.png) |
 | 三 | UART 轮询输出完整字符串 | `uartputc_sync()` 轮询 LSR，见 [`doc/lab1/docs/lab1-design-notes.md`](../doc/lab1/docs/lab1-design-notes.md) |
 | 四 | `printf` 与个性化 Banner | `%d/%s/%x/%%`、协议 2 和边界行，见 [`code/kernel/printf.c`](../code/kernel/printf.c)、[`code/kernel/main.c`](../code/kernel/main.c) |
 

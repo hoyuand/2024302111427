@@ -7,10 +7,10 @@
 ## 上电到 main 的时序
 
 1. QEMU 将内核加载到 RAM 起点 `0x80000000`，入口 `_entry` 从这里执行。`-bios none` 表示不运行固件，由 QEMU 直接把 PC 置为内核入口；链接脚本必须与这个物理加载地址一致，链接到 `0x0` 会使取指地址与实际装载地址不一致。
-2. `_entry` 清除 `mie`，读取 `mhartid` 到 `tp`，非零 hart 进入 `wfi`/跳转自旋，避免多个 hart 同时初始化 UART、栈和全局状态。启动 hart 将 `sp` 设为 `bootstack + LAB1_STACK_KB*1024`，栈位于 `.bss` 的高端并按页对齐。
-3. `_entry` 将 `mtvec` 写为 4 字节对齐的 `m_trap_vector`；配置 `pmpaddr0=0x3fffffffffffff` 与 `pmpcfg0=0xf`，用 NAPOT 放行全物理地址的 R/W/X 访问，保证降权后的 S 态能取指和访问 UART；随后把异常/中断委托寄存器写为全 1。
-4. 启动阶段没有页表，`satp=0` 选择 Bare 模式，并执行 `sfence.vma` 清理可能残留的地址转换状态。设置 `mepc=start`、清除 `mstatus.MIE`、把 `mstatus.MPP` 设为 S，执行 `mret` 后从 `start` 的第一条指令继续。
-5. `start` 不再读取 `mhartid`（该 CSR 属于 M 态）；它直接保留 `_entry` 已放入 `tp` 的 hart 编号，关闭 S 态中断，设置 `stvec`，初始化 UART，然后调用 `main`。`main` 返回后用 `wfi` 停机。
+2. `start.c` 以页对齐方式定义 `LAB1_STACK_KB*1024` 字节的 `bootstack`，同时满足说明书要求的 16 字节对齐。`_entry` 清除 `mie`，读取 `mhartid` 到 `tp`，非零 hart 进入 `wfi`/跳转自旋；启动 hart 将 `sp` 设为 `bootstack` 高地址端，随后调用仍处于 M 态的 `start()`。
+3. `start()` 将 `mtvec` 写为 4 字节对齐的 `m_trap_vector`；配置 `pmpaddr0=0x3fffffffffffff` 与 `pmpcfg0=0xf`，用 NAPOT 放行全物理地址的 R/W/X 访问，保证降权后的 S 态能取指和访问 UART；随后配置异常与中断委托。
+4. 启动阶段没有页表，`start()` 以 `satp=0` 选择 Bare 模式，并执行 `sfence.vma`。它设置 `mepc=main`、把 `mstatus.MPP` 设为 S，执行 `mret` 后从 `main` 的第一条指令继续。
+5. `main()` 已运行在 S 态，不再读取 M 态 CSR；它关闭 S 态设备中断并初始化 UART，然后输出 Banner 和边界自检。`main` 返回后没有合法调用者，因此最终实现保持输出完成后的等待状态。
 
 ## UART 与输出协议
 

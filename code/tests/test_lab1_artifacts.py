@@ -23,12 +23,20 @@ class Lab1ArtifactsTest(unittest.TestCase):
 
     def test_startup_invariants_are_present(self):
         entry = (ROOT / "kernel" / "entry.S").read_text(encoding="utf-8")
-        self.assertIn("csrw    pmpaddr0", entry)
-        self.assertIn("csrw    pmpcfg0", entry)
-        self.assertIn("csrw    satp, zero", entry)
+        self.assertIn("csrw    mie, zero", entry)
+        self.assertIn("csrr    tp, mhartid", entry)
+        self.assertIn("LAB1_STACK_KB * 1024", entry)
+        self.assertIn("call    start", entry)
         self.assertIn(".balign 4", entry)
         start = (ROOT / "kernel" / "start.c").read_text(encoding="utf-8")
         self.assertNotIn("r_mhartid", start)
+        self.assertIn("aligned(4096)", start)
+        self.assertIn("bootstack[LAB1_STACK_KB * 1024]", start)
+        for term in (
+            "w_pmpaddr0", "w_pmpcfg0", "w_satp(0)", "w_medeleg",
+            "w_mideleg", "w_mepc((uint64)main)", "MSTATUS_MPP_S", 'asm volatile("mret")',
+        ):
+            self.assertIn(term, start)
         console = (ROOT / "kernel" / "console.c").read_text(encoding="utf-8")
         self.assertIn("COURSE_SID % 16", console)
         self.assertIn("UART_LSR_THRE", console)

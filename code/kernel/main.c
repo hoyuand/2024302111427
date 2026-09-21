@@ -1,16 +1,22 @@
 /* Lab1：个性化 banner、自检序列与 printf 边界回归。 */
 #include "types.h"
+#include "riscv.h"
 #include "course_sid.h"
 
 typedef long int64;
 
 extern void printf(const char *fmt, ...);
+extern void uartinit(void);
 extern void console_checksum_begin(void);
 extern uint32 console_checksum_end(void);
 
 void
 main(void)
 {
+  /* 已由 start() 通过 mret 进入 S 态，本实验采用 UART 轮询输出。 */
+  intr_off();
+  uartinit();
+
   /* 协议 2：校验和是整段启动输出的 ASCII 字节和（含换行）mod 10000，
    * 最终以 [chk=十进制] 输出；关闭累加后不再产生正文。 */
   console_checksum_begin();

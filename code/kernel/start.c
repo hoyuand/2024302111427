@@ -1,24 +1,43 @@
-/* Lab1：S 态的最小 C 入口。 */
+/* Lab1：M 态初始化与向 S 态的切换入口。 */
 #include "types.h"
 #include "riscv.h"
+#include "course_sid.h"
 
 extern void s_trap_vector(void);
-extern void uartinit(void);
 extern void main(void);
+extern void m_trap_vector(void);
+
+/* 页对齐同时满足说明书要求的 16 字节栈对齐。 */
+__attribute__((aligned(4096))) uchar bootstack[LAB1_STACK_KB * 1024];
 
 void
 start(void)
 {
-  /* entry.S 已在 M 态把 mhartid 保存到 tp；S 态不能再读取 mhartid CSR。 */
+  /* entry.S 已保存 hartid 并建立 C 栈，此处仍运行在 M 态。 */
+  asm volatile("csrw mtvec, %0" : : "r"((uint64)m_trap_vector));
 
-  /* 本轮是轮询输出，不启用 S 态设备中断。 */
-  intr_off();
+  /* 允许 S/U 态访问全部物理地址，包含内核 RAM 与 UART MMIO。 */
+  w_pmpaddr0(0x3fffffffffffffL);
+  w_pmpcfg0(0xf);
+
+  /* 本阶段不启用分页；异常与中断委托给 S 态处理。 */
+  w_satp(0);
+  sfence_vma();
+  w_medeleg(0xffff);
+  w_mideleg(0xffff);
+  w_mie(0);
+  w_sie(0);
   w_stvec((uint64)s_trap_vector);
-  uartinit();
 
-  main();
+  /* mret 返回到 main，并把目标特权级设置为 S 态。 */
+  w_mepc((uint64)main);
+  uint64 status = r_mstatus();
+  status &= ~MSTATUS_MPP_MASK;
+  status |= MSTATUS_MPP_S;
+  w_mstatus(status);
+  asm volatile("mret");
 
-  /* main 返回后没有合法调用者；低功耗停机而不是跑飞。 */
+  /* mret 不应返回；保留兜底等待避免异常路径跑飞。 */
   for (;;)
     asm volatile("wfi");
 }
