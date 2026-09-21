@@ -79,6 +79,8 @@ printf(const char *fmt, ...)
         print_unsigned((uint64)va_arg(ap, uint), 10);
       break;
     case 'x':
+      /* 说明书要求 %x 输出小写十六进制并带 0x 前缀。 */
+      console_raw_puts("0x");
       if (long_arg)
         print_unsigned(va_arg(ap, uint64), 16);
       else

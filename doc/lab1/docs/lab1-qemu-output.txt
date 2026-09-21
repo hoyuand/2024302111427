@@ -1,10 +1,10 @@
 Lab1 QEMU UART capture (expected and observed)
 ===============================================
 OSLAB1 sid=2024302111427 mod97=0x17
-printf-boundary zero=0 neg=-42 max=2147483647 empty=""
+printf-boundary zero=0 neg=-42 max=2147483647 min=-2147483648 empty="" hex=0x2a percent=%
 printf-long=0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz
-[chk=1376]
+[chk=3981]
 
-Observed bytes: 259
+Observed bytes: 294
 Expected file: expect_banner.txt
 Comparison: exact match

@@ -1,0 +1,19 @@
+Lab0 artifact self-check
+========================
+$ python3 -m unittest discover -s code/tests -p "test_*.py" -v
+test_doc_structure_is_complete ... ok
+test_each_diagram_has_three_personal_notes ... ok
+test_lab0_diagrams_are_monochrome ... ok
+test_lab1_mermaid_source_is_monochrome ... ok
+test_personal_baseline_is_present_and_unchanged_shape ... ok
+test_required_diagrams_cover_acceptance_terms ... ok
+test_boundary_cases_are_emitted_by_main ... ok
+test_expected_banner_shape_and_checksum ... ok
+test_startup_invariants_are_present ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in ...s
+
+OK
+
+该记录对应一次实际运行的全量资产检查；时间会随环境变化，因此省略耗时数值。

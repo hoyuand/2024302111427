@@ -15,4 +15,6 @@ Lab0 完成 xv6 代码导读、实验环境自检和三张操作系统机制图�
 
 * `docs/lab0-result.md`：本轮目标、命令和结果；
 * `docs/lab0-reading-notes.md`：源码依据、自查题和现场说明要点；
-* `docs/environment-check.md`：工具链、QEMU 和 WSL2 记录。
+* `docs/environment-check.md`：工具链、QEMU 和 WSL2 记录；
+* `docs/lab0-artifact-check.txt`：实际运行的图纸与目录资产检查输出；
+* [`course-config/lab0-v2-requirements.md`](../../course-config/lab0-v2-requirements.md)：新版说明书要求对照表。

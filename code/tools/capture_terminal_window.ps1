@@ -1,6 +1,6 @@
 param(
     [string]$Title = "Lab1-REAL-FINAL",
-    [string]$Output = "teacher-check/lab1/images/lab1-terminal-run.png"
+    [string]$Output = "doc/lab1/images/lab1-terminal-run.png"
 )
 
 $ErrorActionPreference = "Stop"

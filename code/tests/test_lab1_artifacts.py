@@ -32,6 +32,13 @@ class Lab1ArtifactsTest(unittest.TestCase):
         console = (ROOT / "kernel" / "console.c").read_text(encoding="utf-8")
         self.assertIn("COURSE_SID % 16", console)
         self.assertIn("UART_LSR_THRE", console)
+        printf = (ROOT / "kernel" / "printf.c").read_text(encoding="utf-8")
+        self.assertIn('console_raw_puts("0x")', printf)
+
+    def test_boundary_cases_are_emitted_by_main(self):
+        main = (ROOT / "kernel" / "main.c").read_text(encoding="utf-8")
+        for term in ("min=%d", "hex=%x", "percent=%%", "2147483647"):
+            self.assertIn(term, main)
 
 
 if __name__ == "__main__":

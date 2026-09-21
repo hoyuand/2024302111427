@@ -6,7 +6,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parent
-LAB0_IMAGES = REPO / "teacher-check" / "lab0" / "images"
+LAB0_IMAGES = REPO / "doc" / "lab0" / "images"
 
 
 class Lab0ArtifactsTest(unittest.TestCase):
@@ -44,16 +44,16 @@ class Lab0ArtifactsTest(unittest.TestCase):
         self.assertIn("LAB1_BANNER_PROTOCOL       = 2", params)
         self.assertIn("LAB1_STACK_KB              = 12", params)
 
-    def test_teacher_check_structure_is_complete(self):
+    def test_doc_structure_is_complete(self):
         for lab in ("lab0", "lab1"):
-            base = REPO / "teacher-check" / lab
+            base = REPO / "doc" / lab
             self.assertTrue((base / "README.md").is_file())
             self.assertTrue((base / "images").is_dir())
             self.assertTrue((base / "docs").is_dir())
 
-        lab0_images = REPO / "teacher-check" / "lab0" / "images"
-        lab1_images = REPO / "teacher-check" / "lab1" / "images"
-        lab1_docs = REPO / "teacher-check" / "lab1" / "docs"
+        lab0_images = REPO / "doc" / "lab0" / "images"
+        lab1_images = REPO / "doc" / "lab1" / "images"
+        lab1_docs = REPO / "doc" / "lab1" / "docs"
         self.assertTrue((lab0_images / "lab0-terminal-run.png").is_file())
         for name in (
             "lab1-terminal-run.png",
@@ -63,17 +63,27 @@ class Lab0ArtifactsTest(unittest.TestCase):
         for name in (
             "lab1-result.md",
             "lab1-git-proof.txt",
+            "lab1-requirement-matrix.md",
         ):
             self.assertTrue((lab1_docs / name).is_file(), name)
+        self.assertTrue(
+            (REPO / "doc" / "lab0" / "docs" / "lab0-artifact-check.txt").is_file()
+        )
 
         self.assertFalse(list(lab0_images.glob("*.svg")))
         self.assertFalse(list(lab0_images.glob("*.md")))
         self.assertFalse(list(lab1_images.glob("*.svg")))
         self.assertFalse(list(lab1_images.glob("*.md")))
+        for images in (lab0_images, lab1_images):
+            unexpected = [
+                p for p in images.iterdir()
+                if p.is_file() and p.suffix.lower() not in {".png", ".mmd"}
+            ]
+            self.assertEqual([], unexpected, f"图片目录存在非 PNG/Mermaid 文件: {unexpected}")
 
     def test_lab1_mermaid_source_is_monochrome(self):
         source = (
-            REPO / "teacher-check" / "lab1" / "images" / "lab1-startup-sequence.mmd"
+            REPO / "doc" / "lab1" / "images" / "lab1-startup-sequence.mmd"
         ).read_text(encoding="utf-8")
         colors = set(re.findall(r"#[0-9a-fA-F]{6}", source.lower()))
         self.assertTrue(colors <= {"#000000", "#ffffff"}, sorted(colors))
