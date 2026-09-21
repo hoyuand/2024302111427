@@ -5,7 +5,8 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-LAB0_IMAGES = ROOT / "teacher-check" / "lab0" / "images"
+REPO = ROOT.parent
+LAB0_IMAGES = REPO / "teacher-check" / "lab0" / "images"
 
 
 class Lab0ArtifactsTest(unittest.TestCase):
@@ -38,42 +39,41 @@ class Lab0ArtifactsTest(unittest.TestCase):
 
     def test_personal_baseline_is_present_and_unchanged_shape(self):
         sid_header = (ROOT / "kernel" / "course_sid.h").read_text(encoding="utf-8")
-        params = (ROOT / "我的参数.txt").read_text(encoding="utf-8")
+        params = (REPO / "course-config" / "student-parameters.txt").read_text(encoding="utf-8")
         self.assertIn("#define COURSE_SID 2024302111427", sid_header)
         self.assertIn("LAB1_BANNER_PROTOCOL       = 2", params)
         self.assertIn("LAB1_STACK_KB              = 12", params)
 
     def test_teacher_check_structure_is_complete(self):
         for lab in ("lab0", "lab1"):
-            base = ROOT / "teacher-check" / lab
+            base = REPO / "teacher-check" / lab
             self.assertTrue((base / "README.md").is_file())
             self.assertTrue((base / "images").is_dir())
             self.assertTrue((base / "docs").is_dir())
 
-        lab1_images = ROOT / "teacher-check" / "lab1" / "images"
-        lab1_docs = ROOT / "teacher-check" / "lab1" / "docs"
+        lab0_images = REPO / "teacher-check" / "lab0" / "images"
+        lab1_images = REPO / "teacher-check" / "lab1" / "images"
+        lab1_docs = REPO / "teacher-check" / "lab1" / "docs"
+        self.assertTrue((lab0_images / "lab0-terminal-run.png").is_file())
         for name in (
             "lab1-terminal-run.png",
-            "lab1-verification.png",
-            "lab1-git-timeline.png",
             "lab1-startup-sequence.png",
         ):
             self.assertTrue((lab1_images / name).is_file(), name)
         for name in (
-            "lab1-summary.md",
-            "lab1-qemu-real-run.txt",
+            "lab1-result.md",
             "lab1-git-proof.txt",
         ):
             self.assertTrue((lab1_docs / name).is_file(), name)
 
-        self.assertFalse(list((ROOT / "teacher-check" / "lab0" / "images").glob("*.svg")))
-        self.assertFalse(list((ROOT / "teacher-check" / "lab0" / "images").glob("*.md")))
-        self.assertFalse(list((ROOT / "teacher-check" / "lab1" / "images").glob("*.svg")))
-        self.assertFalse(list((ROOT / "teacher-check" / "lab1" / "images").glob("*.md")))
+        self.assertFalse(list(lab0_images.glob("*.svg")))
+        self.assertFalse(list(lab0_images.glob("*.md")))
+        self.assertFalse(list(lab1_images.glob("*.svg")))
+        self.assertFalse(list(lab1_images.glob("*.md")))
 
     def test_lab1_mermaid_source_is_monochrome(self):
         source = (
-            ROOT / "teacher-check" / "lab1" / "images" / "lab1-startup-sequence.mmd"
+            REPO / "teacher-check" / "lab1" / "images" / "lab1-startup-sequence.mmd"
         ).read_text(encoding="utf-8")
         colors = set(re.findall(r"#[0-9a-fA-F]{6}", source.lower()))
         self.assertTrue(colors <= {"#000000", "#ffffff"}, sorted(colors))

@@ -1,50 +1,49 @@
-# os实践A-杜浩源-2024302111427
+# 操作系统实践 A · 2024302111427
 
-本仓库用于“操作系统实践”课程的全过程归档。代码基线仅来自课程发放的 `baselines/2024302111427-kernel`；公开版 `xv6-riscv` 只用于理解操作系统机制，不向课程基线复制实现。教师验收材料统一放在 [`teacher-check/`](teacher-check/)；每个实验独立使用 `labN/images/` 和 `labN/docs/`，便于快速检查和期末报告汇总。
+本仓库记录操作系统实践课程的代码、运行验证和实验报告材料。代码基于课程发放的 Lab 骨架完成，实验结果以 QEMU 实测输出和对应的验收文档为准。
 
-GitHub 远端为 <https://github.com/hoyuand/os-A---2024302111427>。GitHub 仓库名只接受 ASCII 字符，创建时会自动移除中文字符；课程项目全称以本页标题和仓库描述中的 `os实践A-杜浩源-2024302111427` 为准。
+## 仓库导航
 
-## 教师检查入口
+| 目录 | 内容 | 检查入口 |
+|---|---|---|
+| [`code/`](code/) | 内核源码、构建文件、测试脚本和运行工具 | [`code/kernel/`](code/kernel/)、[`code/tests/`](code/tests/)、[`code/tools/`](code/tools/) |
+| [`course-config/`](course-config/) | 课程说明、个人参数和验收所需配置 | [`course-config/README.md`](course-config/README.md) |
+| [`teacher-check/`](teacher-check/) | 教师重点检查的实验结果、图片和文档 | [`teacher-check/README.md`](teacher-check/README.md) |
 
-| 实验 | 代码状态 | 直接材料 | 归档标签 |
-|---|---|---|---|
-| Lab0 | 阅读、架构图、环境自检 | [`teacher-check/lab0/`](teacher-check/lab0/) | [`lab0`](https://github.com/hoyuand/os-A---2024302111427/tree/lab0) |
-| Lab1 | 启动、UART、printf、回归测试 | [`teacher-check/lab1/`](teacher-check/lab1/) | [`lab1`](https://github.com/hoyuand/os-A---2024302111427/tree/lab1) |
-| Lab2–Lab7 | 按同一模板追加 | 对应 `teacher-check/labN/` | 对应 `labN` |
+## 实验完成情况
 
-每个实验材料集中在对应目录：`images/` 放运行截图和图示，`docs/` 放结果说明、原始输出与 Git 记录。
+| 实验 | 完成内容 | 教师验收材料 |
+|---|---|---|
+| Lab0 | 完成课程代码阅读、环境自检，以及 `echo` 控制流、`exec` 状态快照、时钟中断旅程三张图 | [`teacher-check/lab0/`](teacher-check/lab0/) |
+| Lab1 | 完成启动汇编、M 态到 S 态切换、PMP、UART、`printf` 和个性化 banner，并通过 QEMU 回归检查 | [`teacher-check/lab1/`](teacher-check/lab1/) |
+| Lab2–Lab7 | 待后续实验完成后追加 | 对应的 `teacher-check/labN/` |
 
-## Lab0 阅读与剖析
+每个实验目录包含一个简短 README、`images/` 图片目录和 `docs/` 文档目录。图片使用 PNG 展示；需要修改的流程图同时保留 Mermaid 源文件。
 
-Lab0 不计分，但必须通过，且会在 Lab1 现场验收时随机抽查。材料已整理到 [`teacher-check/lab0/`](teacher-check/lab0/)：
+## 常用运行命令
 
-- `images/01-echo-control-flow.png`：`echo hi` 从键盘输入到退出回收的全系统控制流参考图。
-- `images/02-exec-state-snapshot.png`：`exec` 完成、echo 首条用户指令尚未执行时的进程表、Sv39 页表与文件引用快照。
-- `images/03-timer-interrupt-journey.png`：用户态时钟中断经 `uservec`、`usertrap`、`yield`、调度器到 `sret` 的时序图。
-- `docs/lab0-reading-notes.md`：源码依据、关键不变式、自查题答案与现场问答提纲。
-- `docs/environment-check.md`：WSL2 和课程工具链自检记录。
-- `docs/manual-capture-guide.md`：软件图纸导出与验收截图步骤。
+在 WSL2 中从仓库根目录执行：
 
-三张图保留 Mermaid 源文件，PNG 用于查看和报告插图。
+```bash
+make -C code clean && make -C code
+python3 code/check_expect.py 2024302111427 code/expect_banner.txt
+python3 -m unittest discover -s code/tests -p "test_*.py" -v
+python3 code/tests/verify_lab1_qemu.py
+```
 
-## 每次实验完成后的固定流程
+Lab1 的真实 QEMU 运行截图位于 [`teacher-check/lab1/images/lab1-terminal-run.png`](teacher-check/lab1/images/lab1-terminal-run.png)，原始输出和验收说明位于 [`teacher-check/lab1/docs/`](teacher-check/lab1/docs/)。
+
+## Git 归档
+
+每轮实验完成后，将代码、测试结果和验收材料一起提交，并使用对应标签归档：
 
 ```bash
 git add .
-git commit -m "第n次实验：完成代码、测试和报告证据"
+git commit -m "第n次实验：完成代码、测试和验收材料"
 git tag labN
 git push origin main
 git push origin labN
 git ls-remote --heads --tags origin refs/heads/main refs/tags/labN
 ```
 
-标签依次使用 `lab0`、`lab1`、`lab2`……，不使用日期或临时标签。本轮材料完成后创建标签并推送。如需提交课程归档包，可执行：
-
-```bash
-git archive --format=zip -o 提交-labN-2024302111427.zip labN
-```
-
-## 基线保护
-
-课程预置文件是接口边界，不应擅自修改。至少包括 `Makefile`、`kernel/kernel.ld`、`kernel/riscv.h`、`kernel/course_sid.h`；其余发放文件也应先核对说明书再改。开发前先做设计笔记，代码实验应自行设计两个测试用例，并保留功能测试、回归测试和现场问答所需证据。
-
+当前标签：`lab0`、`lab1`。Lab1 标签对应本仓库当前已完成的 Lab1 归档提交。

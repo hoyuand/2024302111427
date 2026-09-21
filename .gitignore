@@ -1,9 +1,10 @@
 # Build outputs
-kernel/*.o
-kernel/*.d
-kernel/kernel
+code/kernel/*.o
+code/kernel/*.d
+code/kernel/kernel
 *.log
 提交-*.zip
+code/archives/*.zip
 
 # Local editor and OS files
 .DS_Store

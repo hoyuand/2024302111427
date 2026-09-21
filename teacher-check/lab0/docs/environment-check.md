@@ -35,7 +35,7 @@ binutils-riscv64-unknown-elf 2.42-1ubuntu1+6
 个性化 Lab1 初始骨架构建成功，最后一行是课程 README 明确说明的预期警告：
 
 ```text
-riscv64-unknown-elf-ld -T kernel/kernel.ld -o kernel/kernel kernel/entry.o kernel/start.o kernel/console.o kernel/printf.o kernel/main.o
+riscv64-unknown-elf-ld -T code/kernel/kernel.ld -o code/kernel/kernel code/kernel/entry.o code/kernel/start.o code/kernel/console.o code/kernel/printf.o code/kernel/main.o
 riscv64-unknown-elf-ld: warning: cannot find entry symbol _entry; defaulting to 0000000080000000
 ```
 
@@ -65,5 +65,5 @@ scause   0000000000000000
 复验命令：
 
 ```bash
-python3 tools/preflight.py
+python3 code/tools/preflight.py
 ```
