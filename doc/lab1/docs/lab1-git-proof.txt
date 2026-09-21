@@ -1,18 +1,17 @@
 Lab1 Git archive proof
 ======================
 The V2 handout requires the lab1-submit tag and a zip archive from that tag.
-The code, tests and acceptance materials are contained in GitHub content commit
-$contentCommit. This proof file is committed immediately after that content
-commit; the final lab1 and lab1-submit tags point to the proof commit.
+The code, tests and acceptance materials are contained in GitHub commit 152652ecc665be56f5f8dc96b67d2903009cc9c4.
+The final lab1 and lab1-submit tags point to the proof commit immediately after it.
 Remote: https://github.com/hoyuand/os-A---2024302111427.git
-Working tree: generated build outputs and archives are ignored by .gitignore
+Generated build outputs and archives are ignored by .gitignore.
 
 Push verification
 -----------------
 Archive command:
-  git archive --format=zip -o 鎻愪氦-lab1-2024302111427.zip lab1-submit
+  git archive --format=zip -o lab1-submit.zip lab1-submit
 
 Verify after pulling:
   git ls-remote --heads --tags origin refs/heads/main refs/tags/lab1 refs/tags/lab1-submit
-The three remote object IDs must equal git rev-parse lab1-submit. The zip file
-is a generated release artifact and is not committed into the source tree.
+The three remote object IDs must equal git rev-parse lab1-submit.
+The zip file is a generated release artifact and is not committed into the source tree.
