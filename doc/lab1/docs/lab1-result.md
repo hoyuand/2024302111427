@@ -19,6 +19,6 @@ python3 code/tests/verify_lab1_qemu.py
 
 ## 结果
 
-构建通过；资产和启动检查通过；QEMU 两次冷启动输出一致；串口输出与期望文件逐字节一致；边界行覆盖最小/最大整数、十六进制前缀、空字符串和 `%%`；`QEMU -d int` 日志为空。
+构建通过；`consoleinit()`、`consputc()` 和 `uartputc_sync()` 的接口检查通过；资产和启动检查通过；QEMU 两次冷启动输出一致；串口输出与期望文件逐字节一致；边界行覆盖最小/最大整数、十六进制前缀、空字符串和 `%%`；`QEMU -d int` 日志为空。
 
 归档标签：`lab1`、`lab1-submit`；归档命令见 `lab1-git-proof.txt`。

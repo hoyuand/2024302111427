@@ -10,11 +10,11 @@
 | `exec` 瞬间数据结构快照 | [`doc/lab0/images/02-exec-state-snapshot.png`](../doc/lab0/images/02-exec-state-snapshot.png) | 已覆盖进程表、Sv39 映射、PTE 权限、guard、trapframe、trampoline 和 `ofile[0..2]` |
 | 时钟中断与上下文切换时序图 | [`doc/lab0/images/03-timer-interrupt-journey.png`](../doc/lab0/images/03-timer-interrupt-journey.png) | 已覆盖 `scause`、`uservec`、`usertrap`、`yield`、`swtch`、调度器和 `sret` 闭环 |
 | 图纸导出格式 | `doc/lab0/images/*.png`，同名 `.mmd` 为可编辑源 | 展示图片统一使用 PNG，流程图源文件可复绘 |
-| 自主分析批注 | 三张 `.mmd` 中的“个人思考”节点 | 每张至少 1 处，合计不少于 3 处 |
+| 自主分析批注 | `01-echo-control-flow.mmd`、`02-exec-state-snapshot.mmd`、`03-timer-interrupt-journey.mmd` | 图 1 解释 fork 双返回与 `a0`；图 2 解释 TRAMPOLINE 同址映射；图 3 解释独立调度器栈；每张另含扩展批注 |
 | 自检留痕 | [`doc/lab0/images/lab0-terminal-run.png`](../doc/lab0/images/lab0-terminal-run.png)、[`doc/lab0/docs/lab0-artifact-check.txt`](../doc/lab0/docs/lab0-artifact-check.txt) | 保留真实环境预检截图和自动化资产检查输出 |
 
 ## 关键阅读依据
 
 源码链路和截面数值记录在 [`doc/lab0/docs/lab0-reading-notes.md`](../doc/lab0/docs/lab0-reading-notes.md)。其中明确记录用户态/内核态、用户栈/进程内核栈/调度器栈、`TRAPFRAME`、`TRAMPOLINE`、guard page、文件描述符继承和中断返回路径。
 
-说明书允许在后续实验中通过插桩或 `-d int` 日志进行现场自检。本仓库按课程竞赛认定免去 Lab 实验验证环节的安排，保留静态源码复核、图纸批注和真实环境预检证据，不把未实际取得的 xv6 日志冒充为运行结果。
+说明书允许在后续实验中通过插桩或 `-d int` 日志进行现场自检。本仓库按课程竞赛认定免去 Lab 实验验证环节的安排，保留静态源码复核、图纸批注和真实环境预检证据；`lab0-result.md` 明确列出豁免边界，不把未实际取得的 xv6 日志冒充为运行结果。

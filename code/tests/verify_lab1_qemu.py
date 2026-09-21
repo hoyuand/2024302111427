@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 QEMU = "qemu-system-riscv64"
 BASE_ARGS = [
     QEMU, "-machine", "virt", "-bios", "none",
-    "-kernel", str(ROOT / "kernel" / "kernel"), "-nographic", "-smp", "1",
+    "-kernel", "kernel/kernel", "-nographic", "-smp", "1",
 ]
 
 
@@ -22,9 +22,13 @@ def capture(extra_args=()):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=True,
+        cwd=ROOT,
     )
     time.sleep(0.8)
-    os.killpg(proc.pid, signal.SIGKILL)
+    if hasattr(os, "killpg"):
+        os.killpg(proc.pid, signal.SIGKILL)
+    else:
+        proc.kill()
     stdout, stderr = proc.communicate()
     return stdout, stderr
 

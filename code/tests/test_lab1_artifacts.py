@@ -38,6 +38,11 @@ class Lab1ArtifactsTest(unittest.TestCase):
         ):
             self.assertIn(term, start)
         console = (ROOT / "kernel" / "console.c").read_text(encoding="utf-8")
+        self.assertIn("consoleinit(void)", console)
+        self.assertIn("consputc(int c)", console)
+        self.assertIsNotNone(
+            re.search(r"consputc\(int c\)[\s\S]*?uartputc_sync\(c\)", console)
+        )
         self.assertIn("COURSE_SID % 16", console)
         self.assertIn("UART_LSR_THRE", console)
         printf = (ROOT / "kernel" / "printf.c").read_text(encoding="utf-8")

@@ -6,7 +6,7 @@ flowchart LR
   s --> p["PMP 配置<br/>允许 S/U 态访问"]:::plain
   p --> t["设置 medeleg / mideleg<br/>satp=Bare，mepc=main"]:::plain
   t --> r["mret<br/>切换到 S 态 main"]:::plain
-  r --> u["UART 初始化<br/>轮询发送启动信息"]:::plain
+  r --> u["consoleinit → uartinit<br/>UART 轮询发送启动信息"]:::plain
   u --> m["main<br/>输出 banner 与 printf 自检"]:::plain
   n["个人核对：Lab1 的输出证据来自 QEMU stdout；<br/>本图只说明启动路径，不替代运行截图。"]:::note
   s -.-> n

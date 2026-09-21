@@ -4,7 +4,7 @@
 
 typedef long int64;
 
-extern void console_raw_putc(int c);
+extern void consputc(int c);
 extern void console_raw_puts(const char *s);
 
 static void
@@ -15,7 +15,7 @@ print_unsigned(uint64 value, uint32 base)
   uint32 n = 0;
 
   if (value == 0) {
-    console_raw_putc('0');
+    consputc('0');
     return;
   }
   while (value != 0) {
@@ -23,7 +23,7 @@ print_unsigned(uint64 value, uint32 base)
     value /= base;
   }
   while (n > 0)
-    console_raw_putc(buf[--n]);
+    consputc(buf[--n]);
 }
 
 static void
@@ -31,7 +31,7 @@ print_signed(int64 value)
 {
   uint64 magnitude;
   if (value < 0) {
-    console_raw_putc('-');
+    consputc('-');
     /* 这样处理 INT64_MIN 也不会在取反时溢出。 */
     magnitude = (uint64)(-(value + 1)) + 1;
   } else {
@@ -48,7 +48,7 @@ printf(const char *fmt, ...)
 
   for (; *fmt; fmt++) {
     if (*fmt != '%') {
-      console_raw_putc((uchar)*fmt);
+      consputc((uchar)*fmt);
       continue;
     }
     fmt++;
@@ -59,7 +59,7 @@ printf(const char *fmt, ...)
     }
     switch (*fmt) {
     case 'c':
-      console_raw_putc(va_arg(ap, int));
+      consputc(va_arg(ap, int));
       break;
     case 's': {
       const char *s = va_arg(ap, const char *);
@@ -91,14 +91,14 @@ printf(const char *fmt, ...)
       print_unsigned((uint64)va_arg(ap, uint64), 16);
       break;
     case '%':
-      console_raw_putc('%');
+      consputc('%');
       break;
     default:
       /* 未知格式原样输出，便于发现测试/实现中的拼写错误。 */
-      console_raw_putc('%');
+      consputc('%');
       if (long_arg)
-        console_raw_putc('l');
-      console_raw_putc((uchar)*fmt);
+        consputc('l');
+      consputc((uchar)*fmt);
       break;
     }
   }

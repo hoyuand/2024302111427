@@ -10,11 +10,11 @@
 2. `start.c` 以页对齐方式定义 `LAB1_STACK_KB*1024` 字节的 `bootstack`，同时满足说明书要求的 16 字节对齐。`_entry` 清除 `mie`，读取 `mhartid` 到 `tp`，非零 hart 进入 `wfi`/跳转自旋；启动 hart 将 `sp` 设为 `bootstack` 高地址端，随后调用仍处于 M 态的 `start()`。
 3. `start()` 将 `mtvec` 写为 4 字节对齐的 `m_trap_vector`；配置 `pmpaddr0=0x3fffffffffffff` 与 `pmpcfg0=0xf`，用 NAPOT 放行全物理地址的 R/W/X 访问，保证降权后的 S 态能取指和访问 UART；随后配置异常与中断委托。
 4. 启动阶段没有页表，`start()` 以 `satp=0` 选择 Bare 模式，并执行 `sfence.vma`。它设置 `mepc=main`、把 `mstatus.MPP` 设为 S，执行 `mret` 后从 `main` 的第一条指令继续。
-5. `main()` 已运行在 S 态，不再读取 M 态 CSR；它关闭 S 态设备中断并初始化 UART，然后输出 Banner 和边界自检。`main` 返回后没有合法调用者，因此最终实现保持输出完成后的等待状态。
+5. `main()` 已运行在 S 态，不再读取 M 态 CSR；它关闭 S 态设备中断并调用 `consoleinit()` 初始化 UART，然后经 `consputc()` 输出 Banner 和边界自检。`main` 返回后没有合法调用者，因此最终实现保持输出完成后的等待状态。
 
 ## UART 与输出协议
 
-UART 基址是 `0x10000000`。初始化时通过 IER(偏移 1)、LCR(偏移 3)、FIFO 控制寄存器 FCR(偏移 2) 配置 8N1、关闭中断并清 FIFO。发送前反复读取 LSR(偏移 5) 的 THRE bit5，只有该位为 1 才向 THR(偏移 0) 写入一个字节，并用 `fence iorw, iorw` 保证 MMIO 顺序。
+UART 基址是 `0x10000000`。`consoleinit()` 调用 `uartinit()`，通过 IER(偏移 1)、LCR(偏移 3)、FIFO 控制寄存器 FCR(偏移 2) 配置 8N1、关闭中断并清 FIFO。`consputc()` 是 printf 和字符串输出的统一入口，内部调用 `uartputc_sync()`；后者发送前反复读取 LSR(偏移 5) 的 THRE bit5，只有该位为 1 才向 THR(偏移 0) 写入一个字节，并用 `fence iorw, iorw` 保证 MMIO 顺序。
 
 协议 2 采用普通 ASCII 正文，banner 和边界自检输出均参与字节和校验；`console_checksum_end` 关闭累加后，最后输出 `[chk=数值]` 并以换行结束，之后不再输出正文。校验和为此前正文（含换行）各字节 ASCII 值之和对 10000 取模。输出满 `16 + COURSE_SID % 16 = 19` 字节后执行 `1 + COURSE_SID % 8 = 4` 次 `nop`，节流只影响等待，不改变字节流。
 

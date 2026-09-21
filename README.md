@@ -55,7 +55,7 @@ git archive --format=zip -o 提交-lab1-2024302111427.zip lab1-submit
 git ls-remote --heads --tags origin refs/heads/main refs/tags/lab1 refs/tags/lab1-submit
 ```
 
-当前历史标签为 `lab0`、`lab1`，新版归档命令记录在 [`doc/lab1/docs/lab1-git-proof.txt`](doc/lab1/docs/lab1-git-proof.txt)。
+当前历史标签为 `lab0`、`lab1`、`lab1-submit`，新版归档命令记录在 [`doc/lab1/docs/lab1-git-proof.txt`](doc/lab1/docs/lab1-git-proof.txt)。
 
 ## 课程说明
 

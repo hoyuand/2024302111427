@@ -18,7 +18,7 @@
 |---|---|---|
 | 一 | 初始栈与裸机单字符输出 | `entry.S` 栈和主核路径保留在最终实现中 |
 | 二 | M 态切换到 S 态并输出 | `start()` 中完成 `PMP + mret`，见 [`doc/lab1/images/lab1-startup-sequence.png`](../doc/lab1/images/lab1-startup-sequence.png) |
-| 三 | UART 轮询输出完整字符串 | `uartputc_sync()` 轮询 LSR，见 [`doc/lab1/docs/lab1-design-notes.md`](../doc/lab1/docs/lab1-design-notes.md) |
+| 三 | `consoleinit()` 初始化控制台；`uartputc_sync()` 轮询 LSR bit5；`consputc()` 统一输出入口 | `console.c` 提供 `consoleinit → uartinit`、`consputc → uartputc_sync`，见 [`doc/lab1/docs/lab1-design-notes.md`](../doc/lab1/docs/lab1-design-notes.md) |
 | 四 | `printf` 与个性化 Banner | `%d/%s/%x/%%`、协议 2 和边界行，见 [`code/kernel/printf.c`](../code/kernel/printf.c)、[`code/kernel/main.c`](../code/kernel/main.c) |
 
 ## 输出与边界测试
