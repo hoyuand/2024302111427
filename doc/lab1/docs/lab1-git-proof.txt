@@ -1,20 +1,20 @@
 Lab1 Git archive proof
 ======================
 The V2 handout requires the `lab1-submit` tag and a zip archive from that tag.
-HEAD: run `git rev-parse HEAD`
-Commit subject: run `git show -s --format=%s HEAD`
-Tags: run `git rev-parse lab1 lab1-submit`
-Previous tag: lab0 -> `3e297e8`
+The code, tests and acceptance materials are contained in parent commit
+`770d2cae47cfd20f16b406f45747922fa51b6b23` (subject: `完善Lab0与Lab1代码、验收材料和运行证据`).
+This proof file is committed immediately after that content commit; the final
+`lab1` and `lab1-submit` tags point to the proof commit.
 Remote: https://github.com/hoyuand/os-A---2024302111427.git
-Working tree: clean; generated archives are ignored by `.gitignore`
+Working tree: generated build outputs and archives are ignored by `.gitignore`
 
 Push verification
 -----------------
 Archive command:
   git archive --format=zip -o 提交-lab1-2024302111427.zip lab1-submit
 
-Verified with `git ls-remote` after pushing:
+Verify after pushing with:
   git ls-remote --heads --tags origin refs/heads/main refs/tags/lab1 refs/tags/lab1-submit
-The remote `main`, `lab1` and `lab1-submit` object IDs must equal the final local
-submission commit. The zip file is a generated release artifact and is not committed
-into the source tree.
+The three remote object IDs must equal `git rev-parse HEAD` at the final proof
+commit. The zip file is a generated release artifact and is not committed into
+the source tree.
