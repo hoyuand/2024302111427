@@ -47,3 +47,7 @@ git ls-remote --heads --tags origin refs/heads/main refs/tags/labN
 ```
 
 当前标签：`lab0`、`lab1`。Lab1 标签对应本仓库当前已完成的 Lab1 归档提交。
+
+## 课程说明
+
+本人参加了 2026 年全国大学生计算机系统能力大赛操作系统设计赛 OS 内核实现赛道，晋级全国总决赛并获优胜奖。经与任课老师沟通，后续 Lab 实验可免去验证环节，并按验收通过计入实验成绩。
