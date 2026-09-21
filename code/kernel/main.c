@@ -2,6 +2,9 @@
 #include "types.h"
 #include "riscv.h"
 #include "course_sid.h"
+#include "proc.h"
+#include "trap.h"
+#include "console.h"
 
 typedef long int64;
 
@@ -34,4 +37,8 @@ main(void)
 
   uint32 checksum = console_checksum_end();
   printf("[chk=%u]\n", checksum);
+
+  trapinit();
+  procinit();
+  proc_start();
 }

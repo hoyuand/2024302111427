@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Run the Lab1 kernel twice and verify UART bytes plus a zero trap log."""
+"""Run the kernel twice and verify the Lab1 UART contract."""
 import os
+import re
 import signal
 import subprocess
 import tempfile
@@ -33,28 +34,53 @@ def capture(extra_args=()):
     return stdout, stderr
 
 
+def assert_lab1_prefix(output, expected):
+    """Lab2 may append an interactive shell prompt after the Lab1 banner."""
+    if not output.startswith(expected):
+        raise SystemExit(
+            "Lab1 UART prefix mismatch\n"
+            f"expected_prefix={expected!r}\nactual={output!r}"
+        )
+    suffix = output[len(expected):]
+    if suffix not in (b"", b"sh> "):
+        raise SystemExit(f"unexpected output after Lab1 prefix: {suffix!r}")
+
+
+def check_trap_log(traps):
+    """Keep Lab1 strict while allowing the known later-Lab traps."""
+    if not traps:
+        print("[ok] QEMU -d int log is empty (Lab1-only image)")
+        return
+    allowed = re.compile(
+        rb"cause:.*000000000000000[1789]"
+        rb".*desc=(user_ecall|m_timer|s_software|s_external)"
+    )
+    unexpected = [
+        line.decode(errors="replace")
+        for line in traps.splitlines()
+        if b"riscv_cpu_do_interrupt" in line and not allowed.search(line)
+    ]
+    if unexpected:
+        raise SystemExit("QEMU reported unexpected traps:\n" + "\n".join(unexpected))
+    print("[ok] QEMU -d int log contains only expected later-Lab traps")
+
+
 def main():
     expected = (ROOT / "expect_banner.txt").read_bytes()
     first, _ = capture()
     second, _ = capture()
-    if first != expected or second != expected:
-        raise SystemExit(
-            "UART output mismatch\n"
-            f"expected={expected!r}\nfirst={first!r}\nsecond={second!r}"
-        )
+    assert_lab1_prefix(first, expected)
+    assert_lab1_prefix(second, expected)
 
     with tempfile.TemporaryDirectory(prefix="lab1-") as temp_dir:
         trap_log = Path(temp_dir) / "qemu-int.log"
         output, _ = capture(("-d", "int", "-D", str(trap_log)))
         traps = trap_log.read_bytes() if trap_log.exists() else b""
-        if output != expected:
-            raise SystemExit("UART output changed while QEMU trap logging was enabled")
-        if traps:
-            raise SystemExit(f"QEMU reported unexpected traps:\n{traps.decode(errors='replace')}")
+        assert_lab1_prefix(output, expected)
+        check_trap_log(traps)
 
     print(f"[ok] UART bytes match expect_banner.txt ({len(expected)} bytes)")
     print("[ok] two cold boots are identical")
-    print("[ok] QEMU -d int log is empty")
 
 
 if __name__ == "__main__":

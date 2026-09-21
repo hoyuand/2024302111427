@@ -2,6 +2,7 @@
 #include "types.h"
 #include "riscv.h"
 #include "course_sid.h"
+#include "memlayout.h"
 
 extern void s_trap_vector(void);
 extern void main(void);
@@ -9,6 +10,7 @@ extern void m_trap_vector(void);
 
 /* 页对齐同时满足说明书要求的 16 字节栈对齐。 */
 __attribute__((aligned(4096))) uchar bootstack[LAB1_STACK_KB * 1024];
+__attribute__((aligned(16))) uint64 machine_scratch[4];
 
 void
 start(void)
@@ -25,8 +27,15 @@ start(void)
   sfence_vma();
   w_medeleg(0xffff);
   w_mideleg(0xffff);
-  w_mie(0);
+  /* Delegate the CLINT machine timer interrupt to S mode. */
+  w_mie(1L << 7);
   w_sie(0);
+  *(volatile uint64 *)(CLINT_BASE + 0x4000) =
+      *(volatile uint64 *)(CLINT_BASE + 0xbff8) + LAB2_TICK * 1000000ULL;
+  asm volatile("csrw mscratch, %0" : : "r"((uint64)machine_scratch));
+  uint64 mstatus = r_mstatus();
+  mstatus |= (1L << 3); /* MSTATUS.MIE */
+  w_mstatus(mstatus);
   w_stvec((uint64)s_trap_vector);
 
   /* mret 返回到 main，并把目标特权级设置为 S 态。 */

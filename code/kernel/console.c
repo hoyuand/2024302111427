@@ -3,6 +3,7 @@
 #include "riscv.h"
 #include "memlayout.h"
 #include "course_sid.h"
+#include "console.h"
 
 #define UART_RHR 0
 #define UART_THR 0
@@ -11,6 +12,7 @@
 #define UART_LCR 3
 #define UART_LSR 5
 #define UART_LSR_THRE 0x20
+#define UART_LSR_DATA 0x01
 
 #define UART_THROTTLE_PERIOD (16 + (COURSE_SID % 16))
 #define UART_THROTTLE_NOPS   (1 + (COURSE_SID % 8))
@@ -18,6 +20,11 @@
 static volatile uint32 tx_count;
 static volatile uint32 checksum_enabled;
 static volatile uint32 checksum_value;
+static char input_buf[LAB2_BUF_SIZE];
+static uint input_r;
+static uint input_w;
+static uint input_count;
+static uint input_lines;
 
 static inline volatile uchar *
 uart_reg(uint32 offset)
@@ -38,12 +45,20 @@ uartinit(void)
   *uart_reg(UART_IER) = 0;          /* polling only */
   io_fence();
   tx_count = 0;
+  input_r = input_w = input_count = input_lines = 0;
 }
 
 void
 consoleinit(void)
 {
   uartinit();
+}
+
+void
+uart_enable_interrupts(void)
+{
+  *uart_reg(UART_IER) = 0x01;
+  io_fence();
 }
 
 static void
@@ -105,4 +120,52 @@ console_checksum_end(void)
 {
   checksum_enabled = 0;
   return checksum_value;
+}
+
+void
+consoleintr(void)
+{
+  volatile uchar *lsr = uart_reg(UART_LSR);
+  volatile uchar *rhr = uart_reg(UART_RHR);
+  while (*lsr & UART_LSR_DATA) {
+    uchar c = *rhr;
+    if (input_count == LAB2_BUF_SIZE) {
+      input_r = (input_r + 1) % LAB2_BUF_SIZE;
+      input_count--;
+    }
+    input_buf[input_w] = (char)c;
+    input_w = (input_w + 1) % LAB2_BUF_SIZE;
+    input_count++;
+    if (c == '\n' || c == '\r')
+      input_lines++;
+    console_raw_putc(c);
+  }
+}
+
+int
+console_input_available(void)
+{
+  if (LAB2_BUF_SEMANTICS == 0)
+    return input_lines != 0;
+  return input_count != 0;
+}
+
+int
+console_read(char *dst, int n)
+{
+  int copied = 0;
+  if (n <= 0 || !console_input_available())
+    return 0;
+  while (copied < n && input_count != 0) {
+    char c = input_buf[input_r];
+    input_r = (input_r + 1) % LAB2_BUF_SIZE;
+    input_count--;
+    dst[copied++] = c;
+    if (c == '\n' || c == '\r') {
+      if (input_lines != 0)
+        input_lines--;
+      break;
+    }
+  }
+  return copied;
 }

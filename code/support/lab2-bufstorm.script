@@ -1,0 +1,8 @@
+EXPECT sh> 
+SEND bufstorm
+SEND A
+SEND B
+SEND C
+SEND D
+EXPECT BUFSTORM lines=4 bytes=8
+EXPECT sh> 
