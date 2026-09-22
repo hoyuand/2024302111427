@@ -17,7 +17,8 @@ Push commands:
   git push origin lab2-start lab2 lab2-submit
 
 Verify the final pointers:
-  git ls-remote --heads --tags origin refs/heads/main refs/tags/lab2-start refs/tags/lab2 refs/tags/lab2-submit
+  git ls-remote origin refs/heads/main refs/tags/lab2-start^{} refs/tags/lab2^{} refs/tags/lab2-submit^{}
+  git rev-parse HEAD 'lab2^{}' 'lab2-submit^{}' 'lab2-start^{}'
 The `main`, `lab2`, and `lab2-submit` object IDs must equal the final submission
 commit; `lab2-start` must equal the earlier code-baseline commit. The historical
 Lab0/Lab1 refs are checked separately and are not overwritten by this Lab2 push.

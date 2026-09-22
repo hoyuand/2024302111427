@@ -14,4 +14,4 @@
 | 缓冲边界 | `lab2-bufstorm-driver.txt` EXPECT 全通过；`lab2-overflow-output.txt` 超长行后内核存活 | 通过 |
 | Lab0/Lab1 回归 | `check_expect.py`、`verify_lab1_qemu.py`、全量 12 个单元/资产测试 | 通过 |
 | 真实运行证据 | `images/lab2-terminal-run.png`、`docs/*.txt` | 通过 |
-| Git 归档与远端核验 | `lab2-start`、`lab2`、`lab2-submit`、两个 ZIP、`lab2-git-proof.txt` | 已提交并推送，待命令复核 |
+| Git 归档与远端核验 | `lab2-start`、`lab2`、`lab2-submit`、两个 ZIP、`lab2-git-proof.txt` | 已提交、已推送，脱引用对象核验通过 |

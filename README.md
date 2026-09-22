@@ -68,7 +68,7 @@ Lab2 归档命令：
 git push origin main
 git push origin lab2-start lab2 lab2-submit
 git archive --format=zip -o 提交-lab2-2024302111427.zip lab2-submit
-git ls-remote --heads --tags origin refs/heads/main refs/tags/lab2-start refs/tags/lab2 refs/tags/lab2-submit
+git ls-remote origin refs/heads/main refs/tags/lab2-start^{} refs/tags/lab2^{} refs/tags/lab2-submit^{}
 ```
 
 ## 课程说明
