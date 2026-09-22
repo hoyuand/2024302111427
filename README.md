@@ -62,6 +62,15 @@ git ls-remote --heads --tags origin refs/heads/main refs/tags/lab1 refs/tags/lab
 
 Lab2 使用 `lab2-start`、`lab2`、`lab2-submit` 三个标签，并导出 `提交-lab2-2024302111427.zip`；代码增量包位于 `code/archives/lab2-code-delta-2024302111427.zip`。本轮完成后同步推送 `main`、`lab2` 和 `lab2-submit`，远端核验记录见 [`doc/lab2/docs/lab2-git-proof.txt`](doc/lab2/docs/lab2-git-proof.txt)。
 
+Lab2 归档命令：
+
+```bash
+git push origin main
+git push origin lab2-start lab2 lab2-submit
+git archive --format=zip -o 提交-lab2-2024302111427.zip lab2-submit
+git ls-remote --heads --tags origin refs/heads/main refs/tags/lab2-start refs/tags/lab2 refs/tags/lab2-submit
+```
+
 ## 课程说明
 
 本人参加了 2026 年全国大学生计算机系统能力大赛操作系统设计赛 OS 内核实现赛道，晋级全国总决赛并获优胜奖。经与任课老师沟通，后续 Lab 实验可免去验证环节，并按验收通过计入实验成绩。
