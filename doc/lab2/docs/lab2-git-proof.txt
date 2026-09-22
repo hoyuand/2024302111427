@@ -1,0 +1,23 @@
+Lab2 Git archive proof
+======================
+Lab2 is submitted from the final local commit with the `lab2` and `lab2-submit`
+tags. `lab2-start` marks the code baseline before the final evidence/documentation
+commit. The complete archive and code-only increment archive are generated locally
+and are not committed into the source tree.
+
+Remote:
+  https://github.com/hoyuand/os-A---2024302111427.git
+
+Archive commands:
+  git archive --format=zip -o 提交-lab2-2024302111427.zip lab2-submit
+  git archive --format=zip -o code/archives/lab2-code-delta-2024302111427.zip lab2
+
+Push commands:
+  git push origin main
+  git push origin lab2 lab2-submit
+
+Verify the final pointers:
+  git ls-remote --heads --tags origin refs/heads/main refs/tags/lab2 refs/tags/lab2-submit
+The three object IDs must equal `git rev-parse HEAD lab2 lab2-submit` after the
+final commit and tags have been created. The historical Lab0/Lab1 refs are checked
+separately and are not overwritten by this Lab2 push.

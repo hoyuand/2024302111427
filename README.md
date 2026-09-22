@@ -60,7 +60,7 @@ git ls-remote --heads --tags origin refs/heads/main refs/tags/lab1 refs/tags/lab
 
 截至 Lab1 的历史标签为 `lab0`、`lab1`、`lab1-submit`，新版归档命令记录在 [`doc/lab1/docs/lab1-git-proof.txt`](doc/lab1/docs/lab1-git-proof.txt)。
 
-Lab2 在本地使用 `lab2-start`、`lab2`、`lab2-submit` 并导出 `提交-lab2-2024302111427.zip`。本轮按要求不推送 GitHub；远端仍保持 Lab1 状态。
+Lab2 使用 `lab2-start`、`lab2`、`lab2-submit` 三个标签，并导出 `提交-lab2-2024302111427.zip`；代码增量包位于 `code/archives/lab2-code-delta-2024302111427.zip`。本轮完成后同步推送 `main`、`lab2` 和 `lab2-submit`，远端核验记录见 [`doc/lab2/docs/lab2-git-proof.txt`](doc/lab2/docs/lab2-git-proof.txt)。
 
 ## 课程说明
 

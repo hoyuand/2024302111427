@@ -32,4 +32,4 @@ bufstorm
 
 ## 归档
 
-本轮在本地创建 `lab2-start`、`lab2` 和 `lab2-submit`，并生成 `提交-lab2-2024302111427.zip`。遵照本轮要求，本次不推送 GitHub；远端指针核验留待用户确认后执行。
+本轮创建 `lab2-start`、`lab2` 和 `lab2-submit`，生成 `提交-lab2-2024302111427.zip`，并同步推送 `main`、`lab2` 和 `lab2-submit`。远端指针核验记录见 [`docs/lab2-git-proof.txt`](docs/lab2-git-proof.txt)。代码增量包为 `code/archives/lab2-code-delta-2024302111427.zip`。

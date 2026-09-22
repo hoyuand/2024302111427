@@ -19,4 +19,4 @@
 
 ## 证据
 
-完整实现与查验路径见 [`doc/lab2/`](../doc/lab2/)。本轮创建本地 `lab2-start`、`lab2`、`lab2-submit` 和 ZIP，但遵照最新要求不推送 GitHub。
+完整实现与查验路径见 [`doc/lab2/`](../doc/lab2/)。本轮创建 `lab2-start`、`lab2`、`lab2-submit` 和 ZIP，并按仓库规范推送 `main`、`lab2`、`lab2-submit`；远端校验命令见 [`doc/lab2/docs/lab2-git-proof.txt`](../doc/lab2/docs/lab2-git-proof.txt)。

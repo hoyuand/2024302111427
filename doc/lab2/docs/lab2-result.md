@@ -24,4 +24,4 @@ python3 code/tests/verify_lab1_qemu.py
 
 ## 归档
 
-本地提交包含 Lab2 代码、测试、文档和图片；标签为 `lab2-start`、`lab2`、`lab2-submit`，归档包为 `提交-lab2-2024302111427.zip`。本轮按要求不执行 `git push`。
+提交包含 Lab2 代码、测试、文档和图片；标签为 `lab2-start`、`lab2`、`lab2-submit`，归档包为 `提交-lab2-2024302111427.zip`。本轮同步推送 `main`、`lab2` 和 `lab2-submit`，远端核验命令见 [`lab2-git-proof.txt`](lab2-git-proof.txt)。
