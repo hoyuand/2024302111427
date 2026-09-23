@@ -24,7 +24,8 @@ repository above is the authenticated push target.
 
 Archive commands:
   git archive --format=zip -o 提交-lab2-2024302111427.zip lab2-submit
-  git archive --format=zip -o code/archives/lab2-code-delta-2024302111427.zip lab2
+  git diff --name-only lab2-start lab2-submit -- code
+  git archive --format=zip --prefix=lab2-code-delta-2024302111427/ -o code/archives/lab2-code-delta-2024302111427.zip lab2-submit code/Makefile code/kernel/console.c code/kernel/lab2.ld code/kernel/proc.c code/kernel/proc.h code/kernel/start.c code/kernel/syscall.c code/kernel/trampoline_anchor.S code/kernel/trap.c code/support/lab2-overflow.script code/support/lab2-spin.script
 
 Push commands:
   git push origin main
