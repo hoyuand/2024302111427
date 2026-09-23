@@ -1,19 +1,29 @@
-# Lab1 · 启动与串口输出
+# Lab1：启动与串口输出
 
-Lab1 完成启动汇编、M 态到 S 态切换、PMP 授权、UART 轮询输出、最小 `printf` 和个性化 banner。验收环境为 QEMU `virt` 单核。
+本目录采用“单篇中文报告 + 图片”的结构。教师查阅实验要求、实现、测试结果和归档信息，请直接阅读 [`docs/lab1-experiment-report.md`](docs/lab1-experiment-report.md)。
 
-## 图片
+## 目录索引
 
-* `images/lab1-terminal-run.png`：真实 Windows Terminal 截图，包含 QEMU 命令和实际 stdout；
-* `images/lab1-startup-sequence.png`：启动路径图，说明 `_entry`、PMP、`mret`、`start`、`consoleinit`、UART 和 `main` 的关系。
+```text
+doc/lab1/
+├── README.md
+├── docs/
+│   └── lab1-experiment-report.md   # 要求摘要、实现说明、实测结果、插图与归档记录
+└── images/
+    ├── lab1-terminal-run.png       # QEMU 真实终端截图
+    ├── lab1-startup-sequence.png   # 黑白启动流程图，在主报告内嵌入
+    └── lab1-startup-sequence.mmd   # 流程图可编辑 Mermaid 源文件
+```
 
-启动路径图的 Mermaid 源文件为 `images/lab1-startup-sequence.mmd`。
+## 查验命令
 
-## 文档
+在仓库根目录执行：
 
-* `docs/lab1-result.md`：本轮目标、命令和结果摘要；
-* `docs/lab1-qemu-output.txt`：期望串口输出及字节数；
-* `docs/lab1-design-notes.md`：启动、UART、printf 和两个自测用例的设计说明；
-* `docs/lab1-requirement-matrix.md`：新版说明书的分阶段任务、边界测试和归档要求对照；
-* `docs/lab1-git-proof.txt`：提交、标签和远端指针记录；
-* [`course-config/lab1-v2-requirements.md`](../../course-config/lab1-v2-requirements.md)：新版说明书要求总表。
+```bash
+make -C code
+python3 code/check_expect.py 2024302111427 code/expect_banner.txt
+python3 -m unittest discover -s code/tests -p "test_*.py" -v
+python3 code/tests/verify_lab1_qemu.py
+```
+
+说明书逐条要求映射见 [`course-config/lab1-v2-requirements.md`](../../course-config/lab1-v2-requirements.md)。

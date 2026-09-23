@@ -18,12 +18,12 @@
 |---|---|---|
 | 一 | 初始栈与裸机单字符输出 | `entry.S` 栈和主核路径保留在最终实现中 |
 | 二 | M 态切换到 S 态并输出 | `start()` 中完成 `PMP + mret`，见 [`doc/lab1/images/lab1-startup-sequence.png`](../doc/lab1/images/lab1-startup-sequence.png) |
-| 三 | `consoleinit()` 初始化控制台；`uartputc_sync()` 轮询 LSR bit5；`consputc()` 统一输出入口 | `console.c` 提供 `consoleinit → uartinit`、`consputc → uartputc_sync`，见 [`doc/lab1/docs/lab1-design-notes.md`](../doc/lab1/docs/lab1-design-notes.md) |
+| 三 | `consoleinit()` 初始化控制台；`uartputc_sync()` 轮询 LSR bit5；`consputc()` 统一输出入口 | `console.c` 提供 `consoleinit → uartinit`、`consputc → uartputc_sync`，见 [`doc/lab1/docs/lab1-experiment-report.md`](../doc/lab1/docs/lab1-experiment-report.md) |
 | 四 | `printf` 与个性化 Banner | `%d/%s/%x/%%`、协议 2 和边界行，见 [`code/kernel/printf.c`](../code/kernel/printf.c)、[`code/kernel/main.c`](../code/kernel/main.c) |
 
 ## 输出与边界测试
 
-学号 `2024302111427` 对应协议 2，`sid % 97 = 0x17`。`%x` 会输出小写 `0x` 前缀，边界行覆盖 0、负数、最大/最小 32 位整数、空字符串、十六进制和 `%%`。期望输出和实测输出保存在 [`doc/lab1/docs/lab1-qemu-output.txt`](../doc/lab1/docs/lab1-qemu-output.txt)，真实运行截图为 [`doc/lab1/images/lab1-terminal-run.png`](../doc/lab1/images/lab1-terminal-run.png)。
+学号 `2024302111427` 对应协议 2，`sid % 97 = 0x17`。`%x` 会输出小写 `0x` 前缀，边界行覆盖 0、负数、最大/最小 32 位整数、空字符串、十六进制和 `%%`。期望输出、回归结果和测试摘要汇总在 [`doc/lab1/docs/lab1-experiment-report.md`](../doc/lab1/docs/lab1-experiment-report.md)，真实运行截图为 [`doc/lab1/images/lab1-terminal-run.png`](../doc/lab1/images/lab1-terminal-run.png)。
 
 复核命令：
 
@@ -36,4 +36,4 @@ python3 code/tests/verify_lab1_qemu.py
 
 ## 版本归档
 
-按照说明书使用 `lab1-submit` 标签和 `git archive` 归档，具体命令与远端核对记录见 [`doc/lab1/docs/lab1-git-proof.txt`](../doc/lab1/docs/lab1-git-proof.txt)。
+按照说明书使用 `lab1-submit` 标签和 `git archive` 归档，标签对象和命令汇总见 [`doc/lab1/docs/lab1-experiment-report.md`](../doc/lab1/docs/lab1-experiment-report.md)。

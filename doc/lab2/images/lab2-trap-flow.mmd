@@ -1,19 +1,18 @@
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#ffffff","primaryTextColor":"#111111","primaryBorderColor":"#111111","lineColor":"#111111","secondaryColor":"#ffffff","tertiaryColor":"#ffffff"}}}%%
 flowchart TD
-    U0["U: user program\necall / timer boundary"] --> H["Hardware\nscause, sepc, SPP"]
-    H --> V["S: s_trap_vector\nsscratch swap + save registers"]
-    V --> T["S: trapframe\nepc, a0-a7, kernel_sp"]
-    T --> D{"usertrap\nscause dispatch"}
-    D -->|ecall| C["syscall_dispatch\nsepc = sepc + 4"]
-    D -->|UART external| I["consoleintr\nPLIC claim + ring producer"]
-    D -->|timer| R["timer accounting\nreturn current process"]
-    C --> E["a0 result\nunknown number -> -1"]
-    I --> W["console_read\ncharacter-stream availability"]
-    R --> Q["sret preparation\nSPP=U, SPIE=1"]
-    E --> Q
-    W --> Q
-    Q --> X["S: userret_direct\nrestore trapframe"]
-    X --> U1["U: resume at epc"]
-    A["Analysis: sscratch protects user a0\nwhile trapframe becomes addressable"] -.-> V
+    U0["U 态用户栈活动\nwrite(fd, buf, n)：a7=SYS_write；a0-a2=参数"] --> H["ecall: U→S\n硬件写 sepc/scause；不切栈"]
+    H --> V["uservec / trampoline\nsscratch 暂存用户 a0；寄存器写入 trapframe"]
+    V --> T["装入 kernel_sp 并切到内核栈\ntrapframe 保存用户 sp/a7/a0-a2"]
+    T --> D["usertrap\nsepc = sepc + 4"]
+    D --> C["syscall_dispatch\na7 分发 SYS_write"]
+    C --> A["sys_write\n校验 fd、n、用户区间"]
+    A --> O["console_raw_putc\n逐字节交给 UART 驱动"]
+    O --> L["uartputc_sync\n轮询 LSR.THRE 后写 THR"]
+    L --> R["返回写入字节数 n\nusertrap 写回 trapframe.a0"]
+    R --> Q["usertrapret 准备返回\nSPP=U，SPIE=1，sepc 已更新"]
+    Q --> X["userret 切回用户 satp\n恢复 trapframe 寄存器"]
+    X --> U1["sret：回 U 态并恢复 trapframe.sp\n用户栈重启用；a0=n，从 ecall 后继续"]
+    A1["分析：硬件 ecall 不保存 GPR/不切栈；\n这些由 trampoline 显式完成。"] -.-> H
+    A2["分析：trapframe 保存用户全现场；\n`a0` 返回值经 trapframe.a0 恢复。"] -.-> R
     classDef plain fill:#fff,stroke:#111,color:#111;
-    class U0,H,V,T,D,C,I,R,E,W,Q,X,U1 plain;
+    class U0,H,V,T,D,C,A,O,L,R,Q,X,U1 plain;

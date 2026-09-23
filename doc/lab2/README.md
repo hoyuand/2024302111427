@@ -1,16 +1,41 @@
-# Lab2：陷入与中断
+# Lab2：陷入、中断与系统调用
 
-本轮在 Lab1 的启动链路上实现最小的用户态运行环境：SV39 用户页表、trampoline 陷阱入口、系统调用分发、UART 中断驱动输入、字符流环形缓冲，以及从内嵌程序表加载 `sh`、`hi`、`spin` 和官方测试程序。基础验收固定使用 QEMU `virt`、`-smp 1`。
+教师查验入口只有一条主线：**本页导航 → 唯一实验报告 → 图示与实测证据**。本轮以 QEMU `virt`、单核 `-smp 1` 验收；学号为 `2024302111427`。
 
-## 目录
+## 验收材料层级
 
-- 代码：[`code/kernel/`](../../code/kernel/)、[`code/user/`](../../code/user/)、[`code/Makefile`](../../code/Makefile)；Lab2 专用链接 overlay 为 [`code/kernel/lab2.ld`](../../code/kernel/lab2.ld)，课程 `kernel.ld` 与赠送 `trampoline.S` 保持原样
-- 设计与要求：[`docs/lab2-design-notes.md`](docs/lab2-design-notes.md)、[`docs/lab2-requirement-matrix.md`](docs/lab2-requirement-matrix.md)
-- 实测原始输出：[`docs/`](docs/)
-- 图示：[`images/lab2-trap-flow.png`](images/lab2-trap-flow.png)、[`images/lab2-console-sequence.png`](images/lab2-console-sequence.png)
-- 真实运行截图：[`images/lab2-terminal-run.png`](images/lab2-terminal-run.png)
+```text
+doc/lab2/
+├── README.md                         # 本页：导航与逐文件索引
+├── docs/
+│   └── lab2-experiment-report.md     # 唯一主报告
+└── images/
+    ├── lab2-trap-flow.png            # write syscall 往返图（展示）
+    ├── lab2-trap-flow.mmd            # 同图可编辑源文件
+    ├── lab2-console-sequence.png     # UART 输入中断时序图（展示）
+    ├── lab2-console-sequence.mmd     # 同图可编辑源文件
+    └── lab2-terminal-run.png         # 真实 QEMU 终端截图
+```
 
-## 查验
+### 主报告
+
+- [`docs/lab2-experiment-report.md`](docs/lab2-experiment-report.md)：目标与结果、数据结构/不变式/回滚、三道 V2 思考题、两项边界/错误路径自测设计及实测、代码位置、要求符合情况、查验命令、真实运行输出摘要、PNG 图示、已知限制和 Git 归档记录。文档中的 WFI 等待语义与完整 sleep/wakeup 调度器明确区分。
+
+### 图片与源文件
+
+- [`images/lab2-trap-flow.png`](images/lab2-trap-flow.png)：`write(fd, buf, n)` 从 U 态 `ecall` 经 trapframe、内核栈、`sys_write`、UART THR 写入，再通过 `trapframe.a0` 和 `sret` 返回的完整路径。
+- [`images/lab2-trap-flow.mmd`](images/lab2-trap-flow.mmd)：上一张流程图的可编辑 Mermaid 源文件。
+- [`images/lab2-console-sequence.png`](images/lab2-console-sequence.png)：空缓冲 `read`、S 态 WFI、UART/PLIC 外部中断、内核陷阱处理、环形缓冲入队与用户态返回的时序图；不把 WFI 误画为进程 sleep/wakeup。
+- [`images/lab2-console-sequence.mmd`](images/lab2-console-sequence.mmd)：上一张时序图的可编辑 Mermaid 源文件。
+- [`images/lab2-terminal-run.png`](images/lab2-terminal-run.png)：真实 QEMU `virt` 单核运行截图，记录启动 banner、`hi`、`badecall` 和短行 `bufstorm`。
+
+## 实现位置
+
+内核实现位于 [`code/kernel/`](../../code/kernel/)；用户程序位于 [`code/user/`](../../code/user/)；QEMU 自动串口注入脚本位于 [`code/support/`](../../code/support/)；课程增量包原样构建参考为 [`code/Makefile.upgrade`](../../code/Makefile.upgrade)，已合并规则在 [`code/Makefile`](../../code/Makefile)；个性化参数定义在 [`code/kernel/course_sid.h`](../../code/kernel/course_sid.h)。V2 要求与代码映射见 [`course-config/lab2-requirements.md`](../../course-config/lab2-requirements.md)。课程赠送 `trampoline.S`、用户接口和 `user.ld` 保持原样；当前用户态使用最小 SV39 页表，不是 `satp=0`。
+
+## 查验命令
+
+在仓库根目录运行：
 
 ```bash
 make -C code clean && make -C code -j2
@@ -23,17 +48,8 @@ python3 code/support/inject_uart.py --tree code --script code/support/lab2-overf
 python3 code/support/inject_uart.py --tree code --script code/support/lab2-spin.script
 ```
 
-进入 `sh>` 后可运行：
+报告给出对应结果摘要：构建、banner 比对、Lab1 双冷启动回归及四个 Lab2 驱动检查；同时保留未知 syscall、短输入/超长输入及 spin 中注入串口的边界结果。
 
-```text
-hi
-badecall
-spin
-bufstorm
-```
+## Git 归档
 
-个人参数来自 [`course-config/student-parameters.txt`](../../course-config/student-parameters.txt)：`LAB2_TICK=3`、`LAB2_BUF_SEMANTICS=1`、`LAB2_BUF_SIZE=128`。短行官方测试由串口驱动自动断言通过；超过 128 字节的输入行允许丢弃缓冲区已满时的旧字节，但必须保持内核存活并完成四次读。本轮实测超长输入得到 `BUFSTORM lines=4 bytes=397`，`spin` 期间注入 `ping` 也通过。原始证据见 [`lab2-bufstorm-output.txt`](docs/lab2-bufstorm-output.txt)、[`lab2-overflow-output.txt`](docs/lab2-overflow-output.txt) 和 [`lab2-spin-output.txt`](docs/lab2-spin-output.txt)。
-
-## 归档
-
-本轮创建 `lab2-start`、`lab2` 和 `lab2-submit`，生成 `提交-lab2-2024302111427.zip`，并同步推送 `main`、`lab2` 和 `lab2-submit`。远端指针核验记录见 [`docs/lab2-git-proof.txt`](docs/lab2-git-proof.txt)。代码增量包为 `code/archives/lab2-code-delta-2024302111427.zip`。
+Lab2 归档标签为 `lab2-start`、`lab2`、`lab2-submit`；验收完成时 `main`、`lab2` 和 `lab2-submit` 指向同一最终提交。完整归档 `提交-lab2-2024302111427.zip` 和相对 `lab1-submit` 的代码增量包 `code/archives/lab2-code-delta-2024302111427.zip` 均为本地提交产物，不提交进源码目录。GitHub 项目名为 [`2024302111427`](https://github.com/hoyuand/2024302111427)，克隆地址为 `https://github.com/hoyuand/2024302111427.git`。

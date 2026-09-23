@@ -17,7 +17,7 @@ class Lab0ArtifactsTest(unittest.TestCase):
                 "内核栈", "调度器栈", "U态", "S态", "lock",
             ],
             "02-exec-state-snapshot.mmd": [
-                "state=", "parent=", "pagetable=", "sz=", "ofile",
+                "state=", "parent=", "pagetable=", "sz=", "epc=ELF.e_entry", "ofile",
                 "TRAPFRAME", "TRAMPOLINE", "V R X U", "V R W U", "inode",
             ],
             "03-timer-interrupt-journey.mmd": [
@@ -51,24 +51,59 @@ class Lab0ArtifactsTest(unittest.TestCase):
             self.assertTrue((base / "images").is_dir())
             self.assertTrue((base / "docs").is_dir())
 
+        lab0_report = (
+            REPO / "doc" / "lab0" / "docs" / "lab0-experiment-report.md"
+        )
+        self.assertTrue(lab0_report.is_file(), "缺少 Lab0 中文主报告")
+        report_text = lab0_report.read_text(encoding="utf-8")
+        lab0_docs = REPO / "doc" / "lab0" / "docs"
+        self.assertEqual(
+            ["lab0-experiment-report.md"],
+            sorted(path.name for path in lab0_docs.iterdir() if path.is_file()),
+            "Lab0 docs 应收敛为唯一中文报告",
+        )
+        for name in (
+            "01-echo-control-flow.png",
+            "02-exec-state-snapshot.png",
+            "03-timer-interrupt-journey.png",
+            "lab0-terminal-run.png",
+        ):
+            self.assertIn(f"../images/{name}", report_text, name)
+
         lab0_images = REPO / "doc" / "lab0" / "images"
         lab1_images = REPO / "doc" / "lab1" / "images"
         lab1_docs = REPO / "doc" / "lab1" / "docs"
+        lab1_report = lab1_docs / "lab1-experiment-report.md"
+        self.assertTrue(lab1_report.is_file(), "缺少 Lab1 中文主报告")
+        self.assertEqual(
+            ["lab1-experiment-report.md"],
+            sorted(path.name for path in lab1_docs.iterdir() if path.is_file()),
+            "Lab1 docs 应收敛为唯一中文报告",
+        )
+        lab1_report_text = lab1_report.read_text(encoding="utf-8")
+        for name in ("lab1-terminal-run.png", "lab1-startup-sequence.png"):
+            self.assertIn(f"../images/{name}", lab1_report_text, name)
+
         self.assertTrue((lab0_images / "lab0-terminal-run.png").is_file())
         for name in (
             "lab1-terminal-run.png",
             "lab1-startup-sequence.png",
         ):
             self.assertTrue((lab1_images / name).is_file(), name)
-        for name in (
-            "lab1-result.md",
-            "lab1-git-proof.txt",
-            "lab1-requirement-matrix.md",
+
+        for lab, report in (
+            ("lab0", lab0_report),
+            ("lab1", lab1_report),
         ):
-            self.assertTrue((lab1_docs / name).is_file(), name)
-        self.assertTrue(
-            (REPO / "doc" / "lab0" / "docs" / "lab0-artifact-check.txt").is_file()
-        )
+            readme = (REPO / "doc" / lab / "README.md").read_text(
+                encoding="utf-8"
+            )
+            for path in (REPO / "doc" / lab / "docs").iterdir():
+                if path.is_file():
+                    self.assertIn(path.name, readme, f"{lab}/README.md: {path.name}")
+            for path in (REPO / "doc" / lab / "images").iterdir():
+                if path.is_file():
+                    self.assertIn(path.name, readme, f"{lab}/README.md: {path.name}")
 
         self.assertFalse(list(lab0_images.glob("*.svg")))
         self.assertFalse(list(lab0_images.glob("*.md")))

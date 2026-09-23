@@ -1,7 +1,0 @@
-[command] (sleep 1; printf 'hi\\n'; sleep 1) | timeout 4s qemu-system-riscv64 -machine virt -bios none -kernel kernel/kernel -m 128M -smp 1 -nographic -d int -D /tmp/lab2-input-int-final.log
-[input] QEMU produced the banner and sh>; the piped hi command ran as pid 2.
-riscv_cpu_do_interrupt: hart:0, async:1, cause:0000000000000007, epc:0x0000000080000fd8, tval:0x0000000000000000, desc=m_timer
-riscv_cpu_do_interrupt: hart:0, async:1, cause:0000000000000009, epc:0x0000000080000fd8, tval:0x0000000000000000, desc=s_external
-riscv_cpu_do_interrupt: hart:0, async:0, cause:0000000000000008, epc:0x00000000000006d8, tval:0x0000000000000000, desc=user_ecall
-
-[result] the UART input path generated s_external after the PLIC claim window was mapped; no illegal-instruction or fetch-fault records were present.

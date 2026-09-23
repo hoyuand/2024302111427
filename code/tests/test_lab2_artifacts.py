@@ -11,12 +11,16 @@ REPO = CODE.parent
 class Lab2ArtifactsTest(unittest.TestCase):
     def test_course_gifts_are_byte_exact(self):
         expected = {
+            "Makefile.upgrade": "e0bad12bfb69d181dab0144d813066e930502b45e7612d7212b66ae54cd59676",
             "kernel/fcntl.h": "c8c2a7fa8a9c432be55dcd4bd6db9429c88c3a95cec6f79a576968b36048e166",
             "kernel/param.h": "2e231d4c792da80c39668de92d56c28e9d24fd1bdc190435f7ce4025d24bbb59",
             "kernel/stat.h": "653da9a25a16140de6733b0fa87d2988d0dee962fe75ab5f17fcb50d19e3f8be",
             "kernel/syscall.h": "cd8b85b251ca89434ce0ce31d86d98521b8ecb3e2b224d95c74db6ee9948525f",
             "kernel/trampoline.S": "92c055df5557217dc6008714c01dc801836a86538a1ab67b617b66bcd873053f",
             "kernel/vm.h": "ebd5dfc1a2d28cb16a15dea12ac9467bded6ca4bf652f44b580e4c5bef3fb1a3",
+            "tests/README-tests.md": "fd43451faadf20b4f4a86e624a46deca8c55d9c60293f7cbb6039bf6b1ecbe6c",
+            "tests/badecall.c": "54c5a2c4914e1d288680e4e075238fbdd3ebc5e5b91fc56ea7baa258a9fdf9d0",
+            "tests/bufstorm.c": "4297a01da3ca03ff8673f5d4a686e55ad9c1b3264135703fbcb3b72d1e2bb5a4",
             "user/hi.c": "10f3fbc0b6baf730a34cee74c2db87b654c13259f84681f144bb2093d061b8bd",
             "user/printf.c": "8c98780668f6418103de788fa8f2c2d16ed419de95a4484e20fe9531194ccbca",
             "user/sh.c": "112a764f79d690b0d1a013c25c184e93df075b2b8c6bdc8f582b61c273692661",
@@ -54,20 +58,32 @@ class Lab2ArtifactsTest(unittest.TestCase):
         lab = REPO / "doc/lab2"
         required = [
             lab / "README.md",
-            lab / "docs/lab2-design-notes.md",
-            lab / "docs/lab2-requirement-matrix.md",
-            lab / "docs/lab2-build-and-smoke.txt",
+            lab / "docs/lab2-experiment-report.md",
             lab / "images/lab2-trap-flow.png",
+            lab / "images/lab2-trap-flow.mmd",
             lab / "images/lab2-console-sequence.png",
+            lab / "images/lab2-console-sequence.mmd",
             lab / "images/lab2-terminal-run.png",
         ]
         for path in required:
             self.assertTrue(path.is_file() and path.stat().st_size > 0, path)
-        smoke = (lab / "docs/lab2-build-and-smoke.txt").read_text(
+        docs_files = sorted(path.name for path in (lab / "docs").iterdir() if path.is_file())
+        self.assertEqual(["lab2-experiment-report.md"], docs_files)
+
+        report = (lab / "docs/lab2-experiment-report.md").read_text(
             encoding="utf-8", errors="replace"
         )
-        self.assertIn("hi: user program running", smoke)
-        self.assertIn("TEST-1 PASS", smoke)
+        self.assertIn("最小 Sv39", report)
+        self.assertIn("trapframe.sp", report)
+        self.assertIn("WFI", report)
+        self.assertIn("TEST-1 PASS", report)
+        self.assertIn("BUFSTORM lines=4 bytes=8", report)
+        self.assertIn("BUFSTORM lines=4 bytes=397", report)
+        self.assertIn("desc=s_external", report)
+
+        readme = (lab / "README.md").read_text(encoding="utf-8")
+        self.assertIn("唯一主报告", readme)
+        self.assertIn("lab2-experiment-report.md", readme)
 
 
 if __name__ == "__main__":

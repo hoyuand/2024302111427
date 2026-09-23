@@ -1,23 +1,29 @@
-%%{init: {"theme":"base","themeVariables":{"primaryColor":"#ffffff","primaryTextColor":"#111111","primaryBorderColor":"#111111","lineColor":"#111111","actorBkg":"#ffffff","actorBorder":"#111111","actorTextColor":"#111111","signalColor":"#111111","signalTextColor":"#111111","noteBkgColor":"#ffffff","noteBorderColor":"#111111","noteTextColor":"#111111"}}}%%
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#ffffff","primaryTextColor":"#111111","primaryBorderColor":"#111111","lineColor":"#111111","secondaryColor":"#ffffff","tertiaryColor":"#ffffff","actorBkg":"#ffffff","actorBorder":"#111111","actorTextColor":"#111111","signalColor":"#111111","signalTextColor":"#111111","noteBkgColor":"#ffffff","noteBorderColor":"#111111","noteTextColor":"#111111","fontSize":"18px"}}}%%
 sequenceDiagram
-    participant U as U: gets/read
-    participant T as trampoline
-    participant S as S: syscall/read
-    participant C as UART/PLIC
-    participant B as ring[128]
-    U->>T: ecall, a7=read
-    T->>S: save trapframe, switch to kernel stack
-    S->>B: inspect input_count
-    alt empty
-        S->>S: enable interrupt and wait
-        C->>T: external interrupt
-        T->>S: consoleintr
-        S->>B: append byte, count newline
-    else available
-        S->>B: consume through newline
+    participant U as U 态 Shell
+    participant T as trampoline.S
+    participant K as S 态 syscall / kernel 栈
+    participant D as UART0 / PLIC / input_buf[128]
+
+    rect rgb(255,255,255)
+        Note over U,D: read 与键盘/UART 外部中断；空缓冲区时 S 态 WFI 等待
+        U->>T: ecall（a7=SYS_read，a0=0，a1=buf，a2=n）
+        T->>T: uservec 保存 trapframe，切 kernel_sp / kernel_satp
+        T->>K: usertrap：sepc+=4，调用 sys_read
+        K->>D: consoleintr 先轮询 RHR；input_count 仍为 0
+        K->>K: 安装 kernel_trap_vector，开 SIE 后 WFI 等待
+        loop input_count == 0
+            D->>K: UART IRQ → PLIC → S 外部中断（scause=9）
+            K->>K: 保存 S 态现场；kerneltrap 调用 devintr
+            K->>D: PLIC claim 识别 UART0 IRQ；consoleintr 读取 RHR
+            K->>D: 字节回显并写入 input_buf；写回 claim 完成中断
+            K-->>K: 恢复现场并 sret；read 循环重查 input_count
+        end
+        K->>K: 关 SIE；trap_wait_end 恢复 uservec
+        K->>D: console_read 消费至换行或 n 字节
+        D-->>K: 返回实际读取长度
+        K->>T: trapframe.a0=n；usertrapret / userret 恢复用户现场
+        T-->>U: sret 回 U 态；a0=n
     end
-    B-->>S: n bytes
-    S->>T: a0=n, restore registers
-    T-->>U: sret to next user instruction
-    Note over B: Analysis: full ring drops the oldest byte on overflow;
-    Note over U,S: Analysis: newline bounds one read even in character-stream mode.
+
+    Note over K,D: 分析：这是 S 态 WFI 等待，不是进程 sleep/wakeup 队列；换行终止一次 read。

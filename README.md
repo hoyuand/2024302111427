@@ -1,6 +1,8 @@
-# 操作系统实践 A · 2024302111427
+# 2024302111427
 
-本仓库记录操作系统实践课程的代码、运行验证和实验报告材料。代码基于课程发放的 Lab 骨架完成，实验结果以 QEMU 实测输出和对应的验收文档为准。
+操作系统实践 A 的课程代码、运行验证和实验报告仓库。代码基于课程发放的 Lab 骨架完成，实验结果以 QEMU 实测输出和对应的验收文档为准。
+
+GitHub 仓库：<https://github.com/hoyuand/2024302111427>（克隆地址：`https://github.com/hoyuand/2024302111427.git`）。
 
 ## 仓库导航
 
@@ -19,7 +21,7 @@
 | Lab2 | 完成 U/S 态陷阱、系统调用、UART 输入环形缓冲、内嵌程序加载和最小进程生命周期 | [`doc/lab2/`](doc/lab2/) |
 | Lab3–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
 
-每个实验目录包含一个简短 README、`images/` 图片目录和 `docs/` 文档目录。图片使用 PNG 展示；需要修改的流程图同时保留 Mermaid 源文件。说明书要求映射集中保存在 [`course-config/`](course-config/)。
+每个实验目录包含一个精简索引 README、`images/` 图片目录和 `docs/` 中文主报告。教师可从对应的 `doc/labN/README.md` 进入主报告；PNG 是展示图，需要编辑时可使用同目录的 Mermaid 源文件。说明书要求映射集中保存在 [`course-config/`](course-config/)。
 
 ## 常用运行命令
 
@@ -36,16 +38,16 @@ python3 code/support/inject_uart.py --tree code --script code/support/lab2-overf
 python3 code/support/inject_uart.py --tree code --script code/support/lab2-spin.script
 ```
 
-Lab1 的真实 QEMU 运行截图位于 [`doc/lab1/images/lab1-terminal-run.png`](doc/lab1/images/lab1-terminal-run.png)，原始输出和验收说明位于 [`doc/lab1/docs/`](doc/lab1/docs/)。
+Lab1 的真实 QEMU 截图、启动图及中文报告位于 [`doc/lab1/`](doc/lab1/)。
 
-Lab2 的真实 QEMU 截图、trap 全景图、控制台时序图和原始输出位于 [`doc/lab2/`](doc/lab2/)；启动后可在 `sh>` 运行 `hi`、`badecall`、`spin` 和 `bufstorm`。本轮已实测 UART 外部中断、非法 syscall、超长输入和忙循环输入。
+Lab2 的真实 QEMU 截图、trap 全景图、控制台时序图和中文报告位于 [`doc/lab2/`](doc/lab2/)；启动后可在 `sh>` 运行 `hi`、`badecall`、`spin` 和 `bufstorm`。本轮已实测 UART 外部中断、非法 syscall、超长输入和忙循环输入。
 
 ## Git 归档
 
 每轮实验完成后，将代码、测试结果和验收材料一起提交，并使用对应标签归档：
 
 ```bash
-git add .
+git add -A
 git commit -m "第n次实验：完成代码、测试和验收材料"
 git tag labN
 git push origin main
@@ -62,9 +64,9 @@ git archive --format=zip -o 提交-lab1-2024302111427.zip lab1-submit
 git ls-remote --heads --tags origin refs/heads/main refs/tags/lab1 refs/tags/lab1-submit
 ```
 
-截至 Lab1 的历史标签为 `lab0`、`lab1`、`lab1-submit`，新版归档命令记录在 [`doc/lab1/docs/lab1-git-proof.txt`](doc/lab1/docs/lab1-git-proof.txt)。
+截至 Lab1 的历史标签为 `lab0`、`lab1`、`lab1-submit`；对应提交、ZIP 归档和核验方式汇总于 [`doc/lab1/docs/lab1-experiment-report.md`](doc/lab1/docs/lab1-experiment-report.md)。
 
-Lab2 使用 `lab2-start`、`lab2`、`lab2-submit` 三个标签，并导出 `提交-lab2-2024302111427.zip`；代码增量包位于 `code/archives/lab2-code-delta-2024302111427.zip`。本轮完成后同步推送 `main`、`lab2` 和 `lab2-submit`，远端核验记录见 [`doc/lab2/docs/lab2-git-proof.txt`](doc/lab2/docs/lab2-git-proof.txt)。
+Lab2 使用 `lab2-start`、`lab2`、`lab2-submit` 三个标签，并导出本地归档 `提交-lab2-2024302111427.zip`；相对 `lab1-submit` 的代码增量包为 `code/archives/lab2-code-delta-2024302111427.zip`。归档状态见 [`doc/lab2/docs/lab2-experiment-report.md`](doc/lab2/docs/lab2-experiment-report.md)。
 
 Lab2 归档命令：
 

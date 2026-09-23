@@ -11,8 +11,8 @@ extern void trampoline(void);
 
 struct proc *current_proc;
 static struct proc ptable[NPROC];
-/* satp=0 means every process uses one physical activity slot.  fork keeps
- * the parent's image in this rollback buffer until the child exits. */
+/* Processes share one physical activity slot in this pre-scheduler stage.
+ * fork keeps the parent's image here until the child exits. */
 static uchar usermem[PROC_MEM_SIZE]
     __attribute__((aligned(PGSIZE), section(".userimage")));
 static uchar fork_backup[PROC_MEM_SIZE]

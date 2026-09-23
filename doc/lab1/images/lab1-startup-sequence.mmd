@@ -1,12 +1,25 @@
-%%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial, Microsoft YaHei, sans-serif","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","secondaryColor":"#ffffff","tertiaryColor":"#ffffff"},"flowchart":{"nodeSpacing":34,"rankSpacing":48,"curve":"linear"}}}%%
-flowchart LR
-  classDef plain fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial, Microsoft YaHei, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#000000","primaryBorderColor":"#000000","lineColor":"#000000","secondaryColor":"#ffffff","tertiaryColor":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#000000"},"flowchart":{"nodeSpacing":30,"rankSpacing":42,"curve":"linear","htmlLabels":true}}}%%
+flowchart TB
+  classDef step fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px
+  classDef decision fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px
   classDef note fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px,stroke-dasharray:4 3
-  e["_entry<br/>M 态：关中断、选主核、建栈"]:::plain --> s["start<br/>M 态 C 初始化"]:::plain
-  s --> p["PMP 配置<br/>允许 S/U 态访问"]:::plain
-  p --> t["设置 medeleg / mideleg<br/>satp=Bare，mepc=main"]:::plain
-  t --> r["mret<br/>切换到 S 态 main"]:::plain
-  r --> u["consoleinit → uartinit<br/>UART 轮询发送启动信息"]:::plain
-  u --> m["main<br/>输出 banner 与 printf 自检"]:::plain
-  n["个人核对：Lab1 的输出证据来自 QEMU stdout；<br/>本图只说明启动路径，不替代运行截图。"]:::note
-  s -.-> n
+  linkStyle default stroke:#000000,stroke-width:1.25px
+
+  qemu["QEMU virt / -bios none<br/>内核入口 0x80000000"]:::step --> entry["_entry · M 态<br/>关闭中断；读取 mhartid"]:::step
+  entry --> hart{"hart 0？"}:::decision
+  hart -- 否 --> secondary["从核：保持 wfi 等待"]:::step
+  hart -- 是 --> stack["建立个性化 bootstack<br/>LAB1_STACK_KB = 12；调用 start()"]:::step
+  stack --> setup["start() · M 态<br/>配置 mtvec、PMP 与异常/中断委托<br/>satp = 0；设置 mepc = main、MPP = S"]:::step
+  setup --> mret["mret<br/>M 态 → S 态"]:::step
+  mret --> main["main() · S 态<br/>关闭 S 态中断；consoleinit() 初始化 UART"]:::step
+  main --> body["printf 输出个性化 banner<br/>边界用例、长字符串及校验正文"]:::step
+  body --> tx["consputc() → uartputc_sync()<br/>读取 UART LSR"]:::step
+  tx --> ready{"LSR bit5 (THRE) = 1？"}:::decision
+  ready -- 否：继续轮询 --> tx
+  ready -- 是 --> thr["写入 THR；执行 I/O fence<br/>更新校验/节流状态"]:::step
+  thr -- 下一个字符 --> body
+  thr -- 正文结束，关闭校验 --> check["输出最后一行 [chk=3981]<br/>随后不再输出 Lab1 正文"]:::step
+
+  analysis["自主核对：PMP 必须在 mret 前放行 S 态访问 UART；<br/>每个 THR 写入都受 LSR.THRE 条件保护。"]:::note
+  analysis -.-> setup
+  analysis -.-> ready

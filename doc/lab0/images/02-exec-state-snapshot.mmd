@@ -7,7 +7,7 @@ flowchart TB
     direction LR
     init["init<br/>state=SLEEPING｜parent=无<br/>pagetable=PT_init"]:::plain
     shell["shell<br/>state=SLEEPING(wait)｜parent=init<br/>pagetable=PT_shell"]:::plain
-    echo["echo<br/>state=RUNNING｜parent=shell<br/>pagetable=PT_echo｜sz=0x4000<br/>ofile[0..2]=F_console"]:::plain
+    echo["echo<br/>state=RUNNING｜parent=shell<br/>pagetable=PT_echo｜sz=0x4000<br/>epc=ELF.e_entry（尚未执行）<br/>ofile[0..2]=F_console"]:::plain
     echo -->|parent| shell -->|parent| init
   end
   subgraph SV39["二 echo 的 Sv39 地址空间（低地址到高地址）"]
