@@ -130,6 +130,9 @@ consoleintr(void)
   while (*lsr & UART_LSR_DATA) {
     uchar c = *rhr;
     if (input_count == LAB2_BUF_SIZE) {
+      char dropped = input_buf[input_r];
+      if ((dropped == '\n' || dropped == '\r') && input_lines != 0)
+        input_lines--;
       input_r = (input_r + 1) % LAB2_BUF_SIZE;
       input_count--;
     }

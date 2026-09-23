@@ -53,10 +53,14 @@ sys_read(struct trapframe *tf)
 
   consoleintr();
   while (!console_input_available()) {
-    /* The UART interrupt remains enabled; polling here is the bounded
-     * single-core fallback while this transitional kernel has no scheduler. */
-    consoleintr();
-    asm volatile("nop");
+    /* There is no sleep/wakeup yet, so park in WFI with the kernel trap
+     * vector installed. Lab4 can replace this bounded wait with a queue. */
+    trap_wait_begin();
+    intr_on();
+    while (!console_input_available())
+      asm volatile("wfi");
+    intr_off();
+    trap_wait_end();
   }
   return console_read((char *)addr, n);
 }

@@ -30,11 +30,15 @@ make -C code clean && make -C code
 python3 code/check_expect.py 2024302111427 code/expect_banner.txt
 python3 -m unittest discover -s code/tests -p "test_*.py" -v
 python3 code/tests/verify_lab1_qemu.py
+python3 code/support/inject_uart.py --tree code --script code/support/lab2-smoke.script
+python3 code/support/inject_uart.py --tree code --script code/support/lab2-bufstorm.script
+python3 code/support/inject_uart.py --tree code --script code/support/lab2-overflow.script
+python3 code/support/inject_uart.py --tree code --script code/support/lab2-spin.script
 ```
 
 Lab1 的真实 QEMU 运行截图位于 [`doc/lab1/images/lab1-terminal-run.png`](doc/lab1/images/lab1-terminal-run.png)，原始输出和验收说明位于 [`doc/lab1/docs/`](doc/lab1/docs/)。
 
-Lab2 的真实 QEMU 截图、trap 全景图、控制台时序图和原始输出位于 [`doc/lab2/`](doc/lab2/)；启动后可在 `sh>` 运行 `hi`、`badecall`、`spin` 和 `bufstorm`。
+Lab2 的真实 QEMU 截图、trap 全景图、控制台时序图和原始输出位于 [`doc/lab2/`](doc/lab2/)；启动后可在 `sh>` 运行 `hi`、`badecall`、`spin` 和 `bufstorm`。本轮已实测 UART 外部中断、非法 syscall、超长输入和忙循环输入。
 
 ## Git 归档
 

@@ -1,0 +1,6 @@
+EXPECT sh>
+SEND spin
+WAIT 300
+SEND ping
+EXPECT ping
+EXPECT spin [0-9]+

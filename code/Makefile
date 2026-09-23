@@ -10,15 +10,15 @@ QEMU = qemu-system-riscv64
 
 OBJS = kernel/entry.o kernel/start.o kernel/console.o kernel/printf.o \
        kernel/main.o kernel/proc.o kernel/syscall.o kernel/trap.o \
-       kernel/trampoline.o kernel/userimg.o
+       kernel/trampoline.o kernel/trampoline_anchor.o kernel/userimg.o
 
 UPROGS = sh hi spin badecall bufstorm
 UFLAGS = -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding \
          -nostdlib -fno-common -ggdb -march=rv64gc \
          -fno-stack-protector -fno-pie -mno-relax -I.
 
-kernel/kernel: $(OBJS) kernel/kernel.ld
-	$(LD) -T kernel/kernel.ld -o $@ $(OBJS)
+kernel/kernel: $(OBJS) kernel/kernel.ld kernel/lab2.ld
+	$(LD) -T kernel/lab2.ld -o $@ $(OBJS)
 
 %.o: %.c kernel/riscv.h kernel/course_sid.h
 	$(CC) $(CFLAGS) -Ikernel -c -o $@ $<

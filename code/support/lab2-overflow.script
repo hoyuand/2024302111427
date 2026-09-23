@@ -1,0 +1,5 @@
+EXPECT sh>
+SEND bufstorm
+REPEAT 4 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+EXPECT BUFSTORM lines=4 bytes=[0-9]+
+EXPECT sh>

@@ -1,0 +1,5 @@
+boot ok
+EXPECT 'sh>': PASS
+EXPECT 'BUFSTORM lines=4 bytes=[0-9]+': PASS
+EXPECT 'sh>': PASS
+log -> /tmp/lab2-overflow-real.log; EXPECT failures 0

@@ -1,0 +1,5 @@
+boot ok
+EXPECT 'sh>': PASS
+EXPECT 'ping': PASS
+EXPECT 'spin [0-9]+': PASS
+log -> /tmp/lab2-spin-real.log; EXPECT failures 0

@@ -1,17 +1,91 @@
 #include "types.h"
 #include "riscv.h"
+#include "memlayout.h"
+#include "vm.h"
 #include "proc.h"
 
 extern void printf(const char *fmt, ...);
 extern uchar _uprog_table[];
+extern char kernel_end[];
+extern void trampoline(void);
 
 struct proc *current_proc;
 static struct proc ptable[NPROC];
 /* satp=0 means every process uses one physical activity slot.  fork keeps
  * the parent's image in this rollback buffer until the child exits. */
-static uchar usermem[PROC_MEM_SIZE] __attribute__((aligned(16)));
-static uchar fork_backup[PROC_MEM_SIZE] __attribute__((aligned(16)));
+static uchar usermem[PROC_MEM_SIZE]
+    __attribute__((aligned(PGSIZE), section(".userimage")));
+static uchar fork_backup[PROC_MEM_SIZE]
+    __attribute__((aligned(PGSIZE), section(".userimage")));
 static int next_pid = 2;
+
+/* A compact SV39 address space is enough for this pre-filesystem stage. */
+static uint64 user_root[512] __attribute__((aligned(PGSIZE)));
+static uint64 low_level1[512] __attribute__((aligned(PGSIZE)));
+static uint64 user_level0[512] __attribute__((aligned(PGSIZE)));
+static uint64 high_level1[512] __attribute__((aligned(PGSIZE)));
+static uint64 high_level0[512] __attribute__((aligned(PGSIZE)));
+static uint64 active_satp;
+
+static void
+page_zero(uint64 *page)
+{
+  for (uint i = 0; i < 512; i++)
+    page[i] = 0;
+}
+
+static void
+build_pagetable(void)
+{
+  page_zero(user_root);
+  page_zero(low_level1);
+  page_zero(user_level0);
+  page_zero(high_level1);
+  page_zero(high_level0);
+
+  /* Identity-map the kernel image and its BSS after kernel_end. */
+  user_root[PX(2, KERNBASE)] = PA2PTE(KERNBASE) | PTE_V | PTE_R | PTE_W | PTE_X;
+
+  /* Map user virtual addresses [0, PROC_MEM_SIZE) to the active image. */
+  user_root[0] = PA2PTE(low_level1) | PTE_V;
+  low_level1[0] = PA2PTE(user_level0) | PTE_V;
+  for (uint i = 0; i < PROC_MEM_SIZE / PGSIZE; i++)
+    user_level0[i] = PA2PTE(usermem + i * PGSIZE) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_U;
+
+  /* Keep each MMIO window reachable while the kernel runs on this table.
+   * These are distinct level-1 indices, so 2 MiB leaves are sufficient. */
+  low_level1[PX(1, CLINT_BASE)] = PA2PTE(CLINT_BASE) | PTE_V | PTE_R | PTE_W;
+  low_level1[PX(1, PLIC)] = PA2PTE(PLIC) | PTE_V | PTE_R | PTE_W;
+  /* PLIC supervisor enable/claim registers live in the next 2 MiB window. */
+  low_level1[PX(1, PLIC + 0x200000)] =
+      PA2PTE(PLIC + 0x200000) | PTE_V | PTE_R | PTE_W;
+  low_level1[PX(1, UART0)] = PA2PTE(UART0) | PTE_V | PTE_R | PTE_W;
+
+  /* The gift trampoline ABI requires fixed high virtual addresses. */
+  user_root[PX(2, TRAMPOLINE)] = PA2PTE(high_level1) | PTE_V;
+  high_level1[PX(1, TRAMPOLINE)] = PA2PTE(high_level0) | PTE_V;
+  high_level0[PX(0, TRAMPOLINE)] =
+      PA2PTE(PGROUNDDOWN((uint64)trampoline)) | PTE_V | PTE_R | PTE_X;
+
+  active_satp = MAKE_SATP(user_root);
+}
+
+uint64
+proc_satp(void)
+{
+  return active_satp;
+}
+
+void
+proc_map_trapframe(void)
+{
+  if (current_proc == 0)
+    return;
+  /* Every struct proc trapframe is page-aligned by proc.h. */
+  high_level0[PX(0, TRAPFRAME)] =
+      PA2PTE(&current_proc->tf) | PTE_V | PTE_R | PTE_W;
+  sfence_vma();
+}
 
 static void
 kmemset(void *dst, int value, uint n)
@@ -84,12 +158,12 @@ static void
 reset_context(struct proc *p)
 {
   kmemset(&p->tf, 0, sizeof(p->tf));
-  p->tf.kernel_satp = 0;
+  p->tf.kernel_satp = active_satp;
   p->tf.kernel_sp = (uint64)(p->kstack + KSTACK_SIZE);
   p->tf.kernel_trap = (uint64)usertrap;
   p->tf.kernel_hartid = 0;
-  p->tf.epc = p->userbase;
-  p->tf.sp = p->userbase + PROC_MEM_SIZE - 16;
+  p->tf.epc = 0;
+  p->tf.sp = PROC_MEM_SIZE - 16;
 }
 
 void
@@ -98,14 +172,21 @@ procinit(void)
   for (int i = 0; i < NPROC; i++) {
     ptable[i].state = UNUSED;
     ptable[i].mem = usermem;
-    ptable[i].userbase = (uint64)usermem;
+    ptable[i].userbase = 0;
   }
   struct proc *p = &ptable[0];
   p->pid = 1;
   p->state = RUNNING;
   p->mem = usermem;
-  p->userbase = (uint64)usermem;
+  p->userbase = 0;
   current_proc = p;
+  build_pagetable();
+  proc_map_trapframe();
+  if ((uint64)usermem < (uint64)kernel_end) {
+    printf("lab2: user image overlaps kernel\n");
+    for (;;)
+      asm volatile("wfi");
+  }
   if (proc_exec("sh") < 0) {
     printf("lab2: embedded sh missing\n");
     for (;;)
@@ -174,8 +255,8 @@ proc_fork(void)
   child->tf.kernel_sp = (uint64)(child->kstack + KSTACK_SIZE);
   child->tf.kernel_trap = (uint64)usertrap;
   child->tf.kernel_hartid = 0;
-  child->tf.sp = child->userbase + (parent->tf.sp - parent->userbase);
-  child->tf.epc = child->userbase + (parent->tf.epc - parent->userbase);
+  child->tf.sp = parent->tf.sp;
+  child->tf.epc = parent->tf.epc;
   child->tf.a0 = 0;
   copy_name(child->name, parent->name);
 
@@ -219,7 +300,7 @@ proc_exit(int status)
   p->state = ZOMBIE;
   p->parent->state = RUNNABLE;
   current_proc = p->parent;
-  usertrap_return();
+  usertrapret();
 }
 
 int
@@ -231,5 +312,5 @@ proc_getpid(void)
 void
 proc_start(void)
 {
-  usertrap_return();
+  usertrapret();
 }

@@ -59,7 +59,8 @@ struct proc {
   char name[16];
   uchar *mem;
   uchar kstack[KSTACK_SIZE] __attribute__((aligned(16)));
-  struct trapframe tf __attribute__((aligned(16)));
+  /* trampoline.S addresses TRAPFRAME at page offset zero. */
+  struct trapframe tf __attribute__((aligned(4096)));
 };
 
 extern struct proc *current_proc;
@@ -71,8 +72,11 @@ int proc_wait(int *status);
 void proc_exit(int status) __attribute__((noreturn));
 int proc_getpid(void);
 void proc_start(void) __attribute__((noreturn));
+uint64 proc_satp(void);
+void proc_map_trapframe(void);
 void usertrap(void);
 void kerneltrap(void *frame);
+void usertrapret(void) __attribute__((noreturn));
 void usertrap_return(void) __attribute__((noreturn));
 int user_range(const void *addr, uint n);
 

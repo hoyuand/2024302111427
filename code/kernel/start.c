@@ -4,7 +4,7 @@
 #include "course_sid.h"
 #include "memlayout.h"
 
-extern void s_trap_vector(void);
+extern void uservec(void);
 extern void main(void);
 extern void m_trap_vector(void);
 
@@ -36,7 +36,7 @@ start(void)
   uint64 mstatus = r_mstatus();
   mstatus |= (1L << 3); /* MSTATUS.MIE */
   w_mstatus(mstatus);
-  w_stvec((uint64)s_trap_vector);
+  w_stvec((uint64)uservec);
 
   /* mret 返回到 main，并把目标特权级设置为 S 态。 */
   w_mepc((uint64)main);

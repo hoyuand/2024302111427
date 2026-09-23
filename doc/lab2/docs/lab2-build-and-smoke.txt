@@ -75,3 +75,29 @@ hi: user program running, pid=2
 sh> badecall
 TEST-1 PASS: unknown syscalls all return -1
 sh> QEMU: Terminated
+
+[final rerun after PLIC claim-window mapping]
+[command] make -C code clean && make -C code -j2
+[result] build completed; linker warning is the expected single RWX kernel LOAD segment.
+[command] python3 -m unittest discover -s code/tests -p "test_*.py" -v
+[result] Ran 12 tests in 1.066s; OK
+[command] python3 code/check_expect.py 2024302111427 code/expect_banner.txt
+[result] banner shape/checksum passed
+[command] python3 code/tests/verify_lab1_qemu.py
+[result] QEMU -d int allowed traps only; 294-byte banner matched twice.
+
+[linker layout check]
+[command] riscv64-unknown-elf-readelf -SW kernel/kernel; riscv64-unknown-elf-readelf -lW kernel/kernel
+[result] .trampsec is an RX PT_LOAD at 0x800cf000; trampoline/uservec start at the page boundary; .userimage is a separate NOLOAD RW segment at 0x800d0000. kernel.ld remains byte-for-byte equal to the course baseline; Lab2 additions are in kernel/lab2.ld and trampoline_anchor.S.
+
+[final rerun with Lab2 linker overlay]
+[command] make -C code clean && make -C code -j2
+[result] build completed using -T kernel/lab2.ld; the only linker warning is the existing RWX kernel LOAD segment.
+[command] python3 -m unittest discover -s code/tests -p 'test_*.py' -v
+[result] Ran 12 tests in 1.723s; OK.
+[command] python3 code/check_expect.py 2024302111427 code/expect_banner.txt && python3 code/tests/verify_lab1_qemu.py
+[result] banner protocol passed; QEMU -d int allowed traps only; 294-byte banner matched on two cold boots.
+[command] python3 code/support/inject_uart.py --tree code --script code/support/lab2-smoke.script; repeat with lab2-bufstorm.script, lab2-overflow.script, lab2-spin.script
+[result] all four real-QEMU drivers completed with EXPECT failures 0; `ping` was received during the spin loop and overflow input left the shell responsive.
+[command] riscv64-unknown-elf-readelf -SW kernel/kernel; riscv64-unknown-elf-readelf -lW kernel/kernel
+[result] .trampsec is RX at 0x800cf000 and userimage is NOLOAD RW at 0x800d0000; the trampoline entry is page-aligned.
