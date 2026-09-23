@@ -8,15 +8,15 @@ and are not committed into the source tree.
 Remote:
   https://github.com/hoyuand/os-A---2024302111427.git
 
-Implementation commit pushed before this proof update:
-  6ae700cb57945aa71cb11ee49504d1481cb03d63
+Final submission commit:
+  512877dfa0ee4724cce01635d31d6915274181b9
 
 Verified remote output after push:
-  6ae700cb57945aa71cb11ee49504d1481cb03d63  refs/heads/main
+  512877dfa0ee4724cce01635d31d6915274181b9  refs/heads/main
   43c675ba8dd5de7462d6a8b5d8127d2081a6bb55  refs/tags/lab2-start
   afbe8873d12df97b49a142dfef3c14e3b84c3a6b  refs/tags/lab2-start^{}
-  6ae700cb57945aa71cb11ee49504d1481cb03d63  refs/tags/lab2
-  6ae700cb57945aa71cb11ee49504d1481cb03d63  refs/tags/lab2-submit
+  512877dfa0ee4724cce01635d31d6915274181b9  refs/tags/lab2
+  512877dfa0ee4724cce01635d31d6915274181b9  refs/tags/lab2-submit
 
 The shorter candidate URL `https://github.com/hoyuand/2024302111427.git`
 was checked and returned `Repository not found`; the existing SID-bearing
