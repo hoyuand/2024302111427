@@ -8,10 +8,12 @@ and are not committed into the source tree.
 Remote:
   https://github.com/hoyuand/2024302111427.git
 
-Final submission commit:
+Code/tree commit before this proof-only metadata commit:
   cddf29e535255c37139500bb06e5d3789e9eb3db
 
-Verified remote output after push:
+The final `main`, `lab2`, and `lab2-submit` refs are updated to the commit
+containing this proof file. The remote object check immediately before this
+proof-only update was:
   cddf29e535255c37139500bb06e5d3789e9eb3db  refs/heads/main
   43c675ba8dd5de7462d6a8b5d8127d2081a6bb55  refs/tags/lab2-start
   afbe8873d12df97b49a142dfef3c14e3b84c3a6b  refs/tags/lab2-start^{}
