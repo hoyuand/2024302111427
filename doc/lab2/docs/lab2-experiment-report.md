@@ -64,7 +64,7 @@ python3 code/support/inject_uart.py --tree code --script code/support/lab2-spin.
 
 本轮最终复核记录：构建成功；全量 `unittest` 共 13 项，全部通过；banner 校验成功；Lab1 QEMU 两次冷启动均匹配 294 字节 banner。四个 Lab2 串口驱动的 EXPECT 失败数均为 0。基础验收为 QEMU `virt`、单核 `-smp 1`。
 
-最终链接检查使用 `readelf -SW/-lW`：`.trampsec` 为 RX 段，起始 `0x800cf000`；trampoline 入口按页对齐；`.userimage` 为独立的 NOLOAD/RW 段，起始 `0x800d0000`。课程原始 `kernel.ld` 未改，Lab2 使用新增链接 overlay。构建时唯一 warning 是既有内核 LOAD 段的 RWX 权限提示。
+最终链接检查使用 `readelf -SW/-lW`：`.trampsec` 为 RX 段，起始 `0x800cf000`；trampoline 入口按页对齐；`.userimage` 为独立的 NOLOAD/RW 段，起始 `0x800d0000`。课程原始 `kernel.ld` 未改，Lab2 使用新增链接 overlay。构建成功，但链接器分别对 `user-flat/sh.elf` 和 `kernel/kernel` 的 LOAD 段给出 RWX 权限警告；它们是非致命 warning，不影响本轮产物生成和 QEMU 验收。
 
 一段真实 QEMU Shell 输出摘录：
 
