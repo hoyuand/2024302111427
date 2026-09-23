@@ -6,7 +6,7 @@ commit. The complete archive and code-only increment archive are generated local
 and are not committed into the source tree.
 
 Remote:
-  https://github.com/hoyuand/os-A---2024302111427.git
+  https://github.com/hoyuand/2024302111427.git
 
 Final submission commit:
   512877dfa0ee4724cce01635d31d6915274181b9
@@ -18,9 +18,8 @@ Verified remote output after push:
   512877dfa0ee4724cce01635d31d6915274181b9  refs/tags/lab2
   512877dfa0ee4724cce01635d31d6915274181b9  refs/tags/lab2-submit
 
-The shorter candidate URL `https://github.com/hoyuand/2024302111427.git`
-was checked and returned `Repository not found`; the existing SID-bearing
-repository above is the authenticated push target.
+The GitHub repository was renamed from `os-A---2024302111427` to the exact
+student-ID name `2024302111427`; `origin` now uses the URL above.
 
 Archive commands:
   git archive --format=zip -o 提交-lab2-2024302111427.zip lab2-submit

@@ -3,7 +3,7 @@ Lab1 Git archive proof
 The V2 handout requires the `lab1-submit` tag and a ZIP archive from that tag.
 The Lab1 content is preserved in the history before the Lab2 merge; the remote
 Lab1 refs remain historical refs and are not rewritten by the Lab2 submission.
-Remote: https://github.com/hoyuand/os-A---2024302111427.git
+Remote: https://github.com/hoyuand/2024302111427.git
 
 Archive command:
   git archive --format=zip -o 提交-lab1-2024302111427.zip lab1-submit
