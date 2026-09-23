@@ -9,14 +9,14 @@ Remote:
   https://github.com/hoyuand/2024302111427.git
 
 Final submission commit:
-  512877dfa0ee4724cce01635d31d6915274181b9
+  cddf29e535255c37139500bb06e5d3789e9eb3db
 
 Verified remote output after push:
-  512877dfa0ee4724cce01635d31d6915274181b9  refs/heads/main
+  cddf29e535255c37139500bb06e5d3789e9eb3db  refs/heads/main
   43c675ba8dd5de7462d6a8b5d8127d2081a6bb55  refs/tags/lab2-start
   afbe8873d12df97b49a142dfef3c14e3b84c3a6b  refs/tags/lab2-start^{}
-  512877dfa0ee4724cce01635d31d6915274181b9  refs/tags/lab2
-  512877dfa0ee4724cce01635d31d6915274181b9  refs/tags/lab2-submit
+  cddf29e535255c37139500bb06e5d3789e9eb3db  refs/tags/lab2
+  cddf29e535255c37139500bb06e5d3789e9eb3db  refs/tags/lab2-submit
 
 The GitHub repository was renamed from `os-A---2024302111427` to the exact
 student-ID name `2024302111427`; `origin` now uses the URL above.
