@@ -7,7 +7,9 @@
 ```text
 doc/lab3/
 ├── README.md
-├── docs/lab3-experiment-report.md
+├── docs/
+│   ├── lab3-experiment-report.md
+│   └── lab3-qemu-output.txt
 └── images/
     ├── lab3-address-space.mmd / .png
     ├── lab3-syscall-copy.mmd / .png
@@ -16,6 +18,8 @@ doc/lab3/
 ```
 
 主报告见 [`docs/lab3-experiment-report.md`](docs/lab3-experiment-report.md)。实现位于 [`code/kernel/vm.c`](../../code/kernel/vm.c)、[`code/kernel/proc.c`](../../code/kernel/proc.c) 和 [`code/kernel/syscall.c`](../../code/kernel/syscall.c)；官方测试为 [`badaccess.c`](../../code/user/badaccess.c) 与 [`memcap.c`](../../code/user/memcap.c)。课程要求原文与 ABI 留在 [`course-config/`](../../course-config/)。
+
+主报告内嵌三张黑白 Mermaid 图和一张真实 QEMU 终端截图；终端截图对应的原始输出另存为 [`docs/lab3-qemu-output.txt`](docs/lab3-qemu-output.txt)。
 
 ## 查验命令
 

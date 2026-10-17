@@ -22,11 +22,15 @@ PTE 的 `A/D` 位交由硬件按 RISC-V 语义置位，dump 只输出 ABI 规定
 
 本轮不把 `KSTACK(p)` 映射进用户页表；每个 `struct proc` 的内核栈仍是内核恒等映射区中的独立数组，避免把内核栈暴露给用户，和 Lab0 快照中的高地址用户 trapframe/trampoline 区分。
 
+图 1：用户地址空间、保护页、堆边界与内核/用户 trampoline 共享映射。
+
 ![用户地址空间与权限](../images/lab3-address-space.png)
 
 ### 2.4 受控拷贝、fork 与 exec
 
 系统调用不再直接解引用用户指针：`copyin/copyout` 逐页调用 `walkaddr`，检查 `V/U` 及写权限，跨页时按页边界分段。`fork` 对父地址空间逐页深拷贝，遇到 guard 空洞跳过，trapframe/trampoline 不复制；子进程重新映射自己的 trapframe。`exec` 先构建并完整填充新页表，全部成功后才替换旧页表，失败路径保留原进程地址空间。
+
+图 2：用户态系统调用经过 trapframe、页表权限检查和跨页受控拷贝。
 
 ![系统调用受控拷贝](../images/lab3-syscall-copy.png)
 
@@ -34,11 +38,17 @@ PTE 的 `A/D` 位交由硬件按 RISC-V 语义置位，dump 只输出 ABI 规定
 
 `SYS_sbrk` 对正增量调用 `uvmalloc`，失败时由其回滚已分配页并保持旧 `brk`；负增量调用 `uvmdealloc`。请求越过 `TRAPFRAME` 前的保护边界直接返回 `-1`。`SBRK_LAZY` 在 Lab3 按 EAGER 语义执行，后续缺页分配留给 Lab5。
 
+图 3：`sbrk` 和 `exec` 的失败回滚/延迟提交路径。
+
 ![映射失败回滚](../images/lab3-rollback.png)
 
 ## 3. 实测证据
 
-真实 QEMU 输出见 [`../images/lab3-terminal-run.png`](../images/lab3-terminal-run.png)，关键结果为：
+真实 QEMU `virt` 单核输出截图如下；它包含启动页表 dump、`badaccess` 两条异常路径和 `memcap` OOM 回滚结果。原始文本输出保存在 [`lab3-qemu-output.txt`](lab3-qemu-output.txt)。
+
+![真实 QEMU 终端运行截图](../images/lab3-terminal-run.png)
+
+关键结果为：
 
 ```text
 DUMP-PAGETABLE begin
