@@ -3,9 +3,9 @@
 本目录保存课程实验的可执行实现和验证工具：
 
 * `kernel/`：启动、trap、系统调用、控制台和最小进程机制；
-* `user/`：课程赠送用户库、Shell、示例程序和官方 Lab2 测试；
+* `user/`：课程赠送用户库、Shell、示例程序和 Lab2/Lab3 官方测试；
 * `support/`：串口注入测试驱动；
-* `tests/`：Lab0–Lab2 资产检查、官方用户测试和 QEMU 回归脚本；
+* `tests/`：Lab0–Lab3 资产检查、官方用户测试和 QEMU 回归脚本；
 * `tools/`：环境预检、终端截图和辅助观测工具；
 * `Makefile`：课程内核的构建入口；
 * `Makefile.upgrade`：课程随 Lab2 增量包提供的原样构建规则参考，已合并到 `Makefile`；

@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "param.h"
+#include "riscv.h"
 
 #define PROC_MEM_SIZE (256 * 1024)
 #define KSTACK_SIZE   4096
@@ -56,8 +57,10 @@ struct proc {
   uint64 userbase;
   uint memsz;
   uint brk;
+  uint64 sz;
+  uint64 stack_top;
   char name[16];
-  uchar *mem;
+  pagetable_t pagetable;
   uchar kstack[KSTACK_SIZE] __attribute__((aligned(16)));
   /* trampoline.S addresses TRAPFRAME at page offset zero. */
   struct trapframe tf __attribute__((aligned(4096)));
@@ -68,7 +71,7 @@ extern struct proc *current_proc;
 void procinit(void);
 int proc_exec(const char *name);
 int proc_fork(void);
-int proc_wait(int *status);
+int proc_wait(uint64 status_addr);
 void proc_exit(int status) __attribute__((noreturn));
 int proc_getpid(void);
 void proc_start(void) __attribute__((noreturn));

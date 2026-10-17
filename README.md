@@ -19,7 +19,8 @@ GitHub 仓库：<https://github.com/hoyuand/2024302111427>（克隆地址：`htt
 | Lab0 | 完成课程代码阅读、环境自检，以及 `echo` 控制流、`exec` 状态快照、时钟中断旅程三张图 | [`doc/lab0/`](doc/lab0/) |
 | Lab1 | 完成启动汇编、M 态到 S 态切换、PMP、UART、`printf` 和个性化 banner，并通过 QEMU 回归检查 | [`doc/lab1/`](doc/lab1/) |
 | Lab2 | 完成 U/S 态陷阱、系统调用、UART 输入环形缓冲、内嵌程序加载和最小进程生命周期 | [`doc/lab2/`](doc/lab2/) |
-| Lab3–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
+| Lab3 | 完成位图物理页分配器、SV39 页表、用户地址空间、copyin/copyout、sbrk、fork/exec 与 OOM/越界测试 | [`doc/lab3/`](doc/lab3/) |
+| Lab4–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
 
 每个实验目录包含一个精简索引 README、`images/` 图片目录和 `docs/` 中文主报告。教师可从对应的 `doc/labN/README.md` 进入主报告；PNG 是展示图，需要编辑时可使用同目录的 Mermaid 源文件。说明书要求映射集中保存在 [`course-config/`](course-config/)。
 
@@ -36,6 +37,7 @@ python3 code/support/inject_uart.py --tree code --script code/support/lab2-smoke
 python3 code/support/inject_uart.py --tree code --script code/support/lab2-bufstorm.script
 python3 code/support/inject_uart.py --tree code --script code/support/lab2-overflow.script
 python3 code/support/inject_uart.py --tree code --script code/support/lab2-spin.script
+# Lab3 官方用户路径：启动后在 sh> 输入 badaccess、memcap
 ```
 
 Lab1 的真实 QEMU 截图、启动图及中文报告位于 [`doc/lab1/`](doc/lab1/)。
@@ -75,6 +77,15 @@ git push origin main
 git push origin lab2-start lab2 lab2-submit
 git archive --format=zip -o 提交-lab2-2024302111427.zip lab2-submit
 git ls-remote origin refs/heads/main refs/tags/lab2-start^{} refs/tags/lab2^{} refs/tags/lab2-submit^{}
+```
+
+Lab3 使用 `lab3-start`、`lab3`、`lab3-submit` 三个标签，并导出本地归档 `提交-lab3-2024302111427.zip`；相对 `lab2-submit` 的代码增量包为 `code/archives/lab3-code-delta-2024302111427.zip`。提交前确认 `main`、`lab3` 和 `lab3-submit` 指向同一提交，并用 `git ls-remote` 核对远端。
+
+```bash
+git tag lab3-submit
+git push origin main lab3-start lab3 lab3-submit
+git archive --format=zip -o 提交-lab3-2024302111427.zip lab3-submit
+git ls-remote origin refs/heads/main refs/tags/lab3-start^{} refs/tags/lab3^{} refs/tags/lab3-submit^{}
 ```
 
 ## 课程说明

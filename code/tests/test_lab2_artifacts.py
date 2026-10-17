@@ -16,8 +16,11 @@ class Lab2ArtifactsTest(unittest.TestCase):
             "kernel/param.h": "2e231d4c792da80c39668de92d56c28e9d24fd1bdc190435f7ce4025d24bbb59",
             "kernel/stat.h": "653da9a25a16140de6733b0fa87d2988d0dee962fe75ab5f17fcb50d19e3f8be",
             "kernel/syscall.h": "cd8b85b251ca89434ce0ce31d86d98521b8ecb3e2b224d95c74db6ee9948525f",
-            "kernel/trampoline.S": "92c055df5557217dc6008714c01dc801836a86538a1ab67b617b66bcd873053f",
-            "kernel/vm.h": "ebd5dfc1a2d28cb16a15dea12ac9467bded6ca4bf652f44b580e4c5bef3fb1a3",
+            # Lab3 v2 intentionally supersedes the Lab2 trampoline gift with
+            # the executable, page-aligned trampsec declaration.
+            "kernel/trampoline.S": "c3e6f230ed2f828e82571efe687930ecb5e5ef1454679b91fa4247d6bb896c1e",
+            # Lab3 replaces the Lab2 declaration with the completed VM API.
+            "kernel/vm.h": "c2ba73b68cdce492eb94035f527e6aec83ea90a63cf5056ce177279e6d575d54",
             "tests/README-tests.md": "fd43451faadf20b4f4a86e624a46deca8c55d9c60293f7cbb6039bf6b1ecbe6c",
             "tests/badecall.c": "54c5a2c4914e1d288680e4e075238fbdd3ebc5e5b91fc56ea7baa258a9fdf9d0",
             "tests/bufstorm.c": "4297a01da3ca03ff8673f5d4a686e55ad9c1b3264135703fbcb3b72d1e2bb5a4",
@@ -50,7 +53,7 @@ class Lab2ArtifactsTest(unittest.TestCase):
 
         makefile = (CODE / "Makefile").read_text(encoding="utf-8")
         self.assertIn("-mno-relax", makefile)
-        self.assertIn("-T user/user.ld", makefile)
+        self.assertIn("-T user/user-lab3.ld", makefile)
         self.assertRegex(makefile, r"UPROGS\s*=.*sh.*hi.*spin.*badecall.*bufstorm")
         self.assertRegex(makefile, r"qemu: kernel/kernel[\s\S]*-smp 1")
 

@@ -5,6 +5,7 @@
 #include "proc.h"
 #include "console.h"
 #include "trap.h"
+#include "vm.h"
 
 #define SCAUSE_INTERRUPT (1ULL << 63)
 #define SCAUSE_STIMER    5
@@ -86,7 +87,7 @@ void
 trapinit(void)
 {
   /* Before the first user page table is active, use the physical address. */
-  w_stvec((uint64)uservec);
+  w_stvec((uint64)kernel_trap_vector);
   plicinit();
   uart_enable_interrupts();
   timerinit();
@@ -125,6 +126,7 @@ trap_wait_end(void)
 void
 usertrap(void)
 {
+  w_stvec((uint64)kernel_trap_vector);
   struct proc *before = current_proc;
   struct trapframe *tf = &before->tf;
   uint64 cause = r_scause();
@@ -141,7 +143,7 @@ usertrap(void)
   } else {
     extern void printf(const char *fmt, ...);
     tf->epc = r_sepc();
-    printf("lab2: unexpected user trap cause=%lx epc=%lx\n", cause, r_sepc());
+    printf("lab3: unexpected user trap cause=%lx epc=%lx\n", cause, r_sepc());
     proc_exit(-1);
   }
   usertrapret();
@@ -167,7 +169,7 @@ usertrapret(void)
   status &= ~SSTATUS_SIE;
   status |= SSTATUS_SUM;
   w_sstatus(status);
-  ((void (*)(uint64))userret)(proc_satp());
+  ((void (*)(uint64))trampoline_address((uint64)userret))(proc_satp());
   for (;;)
     asm volatile("wfi");
 }

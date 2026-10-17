@@ -1,0 +1,14 @@
+sequenceDiagram
+  participant U as 用户态
+  participant TV as uservec / trapframe
+  participant K as usertrap / syscall
+  participant VM as walkaddr + copyin/out
+  participant IO as UART/内核缓冲
+  U->>TV: ecall，保存现场
+  TV->>K: 切换 kernel satp，stvec=kernelvec
+  K->>VM: 校验 V/U/W，逐页分段拷贝
+  VM->>IO: 访问受控内核缓冲或外设
+  IO-->>VM: 结果
+  VM-->>K: 返回长度或 -1
+  K->>TV: stvec=uservec，a0=satp
+  TV-->>U: userret + sret

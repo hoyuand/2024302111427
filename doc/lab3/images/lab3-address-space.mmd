@@ -1,0 +1,10 @@
+flowchart TB
+  A[低地址 0x0000000000] --> B[代码/只读数据<br/>R-X-U]
+  B --> C[数据与 .bss<br/>RW-U]
+  C --> G1[guard page 1<br/>无映射]
+  G1 --> G2[guard page 2<br/>无映射]
+  G2 --> S[固定用户栈<br/>RW-U]
+  S --> H[brk 向上增长的堆<br/>RW-U / EAGER]
+  H --> T[TRAPFRAME<br/>RW，非 U]
+  T --> R[TRAMPOLINE<br/>R-X，非 U]
+  N[内核页表<br/>KERNBASE..PHYSTOP 恒等映射<br/>UART + PLIC + CLINT] -.同一物理跳板页.-> R

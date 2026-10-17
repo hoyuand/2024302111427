@@ -4,6 +4,7 @@
 #include "course_sid.h"
 #include "proc.h"
 #include "trap.h"
+#include "vm.h"
 #include "console.h"
 
 typedef long int64;
@@ -12,6 +13,8 @@ extern void printf(const char *fmt, ...);
 extern void consoleinit(void);
 extern void console_checksum_begin(void);
 extern uint32 console_checksum_end(void);
+extern void kvminit(void);
+extern void kvminithart(void);
 
 void
 main(void)
@@ -39,6 +42,9 @@ main(void)
   printf("[chk=%u]\n", checksum);
 
   trapinit();
+  kinit();
+  kvminit();
+  kvminithart();
   procinit();
   proc_start();
 }
