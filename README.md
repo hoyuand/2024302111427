@@ -38,6 +38,7 @@ python3 code/support/inject_uart.py --tree code --script code/support/lab2-bufst
 python3 code/support/inject_uart.py --tree code --script code/support/lab2-overflow.script
 python3 code/support/inject_uart.py --tree code --script code/support/lab2-spin.script
 # Lab3 官方用户路径：启动后在 sh> 输入 badaccess、memcap
+python3 code/support/inject_uart.py --tree code --script code/support/lab3-smoke.script
 ```
 
 Lab1 的真实 QEMU 截图、启动图及中文报告位于 [`doc/lab1/`](doc/lab1/)。

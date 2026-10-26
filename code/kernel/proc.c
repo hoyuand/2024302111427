@@ -138,8 +138,11 @@ int proc_fork(void)
   for (int i = 1; i < NPROC; i++) if (ptable[i].state == UNUSED) { child = &ptable[i]; break; }
   if (!child) return -1;
   child->pagetable = uvmcreate(child); if (!child->pagetable) return -1;
-  if (uvmcopy(parent->pagetable, child->pagetable, parent->stack_top) < 0) {
-    uvmfree(child->pagetable, 0); child->pagetable = 0; return -1;
+  /* brk may be above the fixed stack after sbrk; copy every mapped user
+   * page through the current heap boundary.  uvmcopy owns cleanup of its
+   * partially-built destination on failure. */
+  if (uvmcopy(parent->pagetable, child->pagetable, parent->brk) < 0) {
+    child->pagetable = 0; return -1;
   }
   child->pid = next_pid++; child->state = RUNNING; child->parent = parent; child->exit_status = 0;
   child->memsz = parent->memsz; child->brk = parent->brk; child->sz = parent->sz;

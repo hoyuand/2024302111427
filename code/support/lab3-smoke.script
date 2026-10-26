@@ -1,0 +1,8 @@
+# Lab3 official user paths: page-fault isolation and eager sbrk OOM rollback.
+SEND badaccess
+EXPECT TEST-3a PASS: wild write killed
+EXPECT TEST-3b PASS: beyond-sbrk access killed
+EXPECT sh> 
+SEND memcap
+EXPECT TEST-4 PASS: OOM returned error
+EXPECT sh> 

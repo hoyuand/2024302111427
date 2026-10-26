@@ -120,7 +120,9 @@ trap_wait_begin(void)
 void
 trap_wait_end(void)
 {
-  w_stvec(trampoline_address((uint64)uservec));
+  /* The caller is still executing in S mode.  Keep kernel_trap_vector
+   * installed until usertrapret switches back immediately before sret. */
+  w_stvec((uint64)kernel_trap_vector);
 }
 
 void

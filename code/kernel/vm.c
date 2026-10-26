@@ -20,8 +20,9 @@ static uint total_pages;
 static pagetable_t kernel_pagetable;
 static uint64 kernel_satp;
 static int map_track_active;
-static pagetable_t map_new_pages[128];
-static pte_t *map_parent_slots[128];
+#define MAP_TRACK_MAX 1024
+static pagetable_t map_new_pages[MAP_TRACK_MAX];
+static pte_t *map_parent_slots[MAP_TRACK_MAX];
 static uint map_new_count;
 
 static int
@@ -136,7 +137,14 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
       pagetable_t next = (pagetable_t)kalloc();
       if (next == 0)
         return 0;
-      if (map_track_active && map_new_count < 128) {
+      if (map_track_active) {
+        /* Every transaction-owned intermediate page must be recorded so a
+         * later leaf failure can release it.  Refuse the mapping rather than
+         * silently creating an untracked page when the journal is full. */
+        if (map_new_count >= MAP_TRACK_MAX) {
+          kfree(next);
+          return 0;
+        }
         map_new_pages[map_new_count] = next;
         map_parent_slots[map_new_count] = pte;
         map_new_count++;
@@ -160,8 +168,11 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
   uint64 first = PGROUNDDOWN(va);
   uint64 last = PGROUNDDOWN(va + size - 1);
   uint mapped = 0;
-  map_track_active = 1;
-  map_new_count = 0;
+  int owner = !map_track_active;
+  if (owner) {
+    map_track_active = 1;
+    map_new_count = 0;
+  }
   for (;;) {
     pte_t *pte = walk(pagetable, first, 1);
     if (pte == 0 || (*pte & PTE_V))
@@ -169,7 +180,8 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
     *pte = PA2PTE(pa) | perm | PTE_V;
     mapped++;
     if (first == last) {
-      map_track_active = 0;
+      if (owner)
+        map_track_active = 0;
       return 0;
     }
     first += PGSIZE;
@@ -182,12 +194,26 @@ bad:
     if (pte)
       *pte = 0;
   }
+  if (owner) {
+    for (uint i = map_new_count; i != 0; i--) {
+      *map_parent_slots[i - 1] = 0;
+      kfree(map_new_pages[i - 1]);
+    }
+    map_new_count = 0;
+    map_track_active = 0;
+  }
+  return -1;
+}
+
+static void
+rollback_map_transaction(void)
+{
   for (uint i = map_new_count; i != 0; i--) {
     *map_parent_slots[i - 1] = 0;
     kfree(map_new_pages[i - 1]);
   }
+  map_new_count = 0;
   map_track_active = 0;
-  return -1;
 }
 
 static void
@@ -288,6 +314,8 @@ walkaddr(pagetable_t pagetable, uint64 va, int write)
   pte_t *pte = walk(pagetable, va, 0);
   if (!pte || !(*pte & PTE_V) || !(*pte & PTE_U))
     return 0;
+  if (!(*pte & PTE_R))
+    return 0;
   if (write && !(*pte & PTE_W))
     return 0;
   return PTE2PA(*pte) + (va & (PGSIZE - 1));
@@ -340,6 +368,9 @@ uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz, int perm)
     return -1;
   uint64 a = PGROUNDUP(oldsz);
   uint64 start = a;
+  uint mapped = 0;
+  map_track_active = 1;
+  map_new_count = 0;
   for (; a < newsz; a += PGSIZE) {
     void *mem = kalloc();
     if (!mem)
@@ -348,11 +379,15 @@ uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz, int perm)
       kfree(mem);
       goto bad;
     }
+    mapped++;
   }
+  map_track_active = 0;
+  map_new_count = 0;
   return 0;
 bad:
-  for (a = start; a < newsz && a < PGROUNDUP(oldsz) + (uint64)MAX_PHYS_PAGES * PGSIZE; a += PGSIZE)
+  for (a = start; a < start + (uint64)(mapped + 1) * PGSIZE; a += PGSIZE)
     unmap_one(pagetable, a, 1);
+  rollback_map_transaction();
   return -1;
 }
 

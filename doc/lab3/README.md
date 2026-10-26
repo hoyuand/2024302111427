@@ -19,7 +19,7 @@ doc/lab3/
 
 主报告见 [`docs/lab3-experiment-report.md`](docs/lab3-experiment-report.md)。实现位于 [`code/kernel/vm.c`](../../code/kernel/vm.c)、[`code/kernel/proc.c`](../../code/kernel/proc.c) 和 [`code/kernel/syscall.c`](../../code/kernel/syscall.c)；官方测试为 [`badaccess.c`](../../code/user/badaccess.c) 与 [`memcap.c`](../../code/user/memcap.c)。课程要求原文与 ABI 留在 [`course-config/`](../../course-config/)。
 
-主报告内嵌三张黑白 Mermaid 图和一张真实 QEMU 终端截图；终端截图对应的原始输出另存为 [`docs/lab3-qemu-output.txt`](docs/lab3-qemu-output.txt)。
+主报告内嵌三张黑白 Mermaid 图和一张真实 QEMU 终端截图；终端截图对应的原始输出另存为 [`docs/lab3-qemu-output.txt`](docs/lab3-qemu-output.txt)。可复现实测交互脚本为 [`code/support/lab3-smoke.script`](../../code/support/lab3-smoke.script)。
 
 ## 查验命令
 
@@ -29,6 +29,12 @@ qemu-system-riscv64 -machine virt -bios none -kernel code/kernel/kernel -nograph
 ```
 
 启动后可在 `sh>` 输入 `hi`、`badaccess`、`memcap`。`badaccess` 应报告两个非法访问被杀，`memcap` 应报告 OOM 返回错误且已有分配保持可用。分页观测输出必须以 `DUMP-PAGETABLE begin/end` 包围，权限字段顺序为 `R/W/X/U`。
+
+Lab3 官方路径可用以下命令复现：
+
+```bash
+python3 code/support/inject_uart.py --tree code --script code/support/lab3-smoke.script
+```
 
 ## 归档
 

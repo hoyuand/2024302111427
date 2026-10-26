@@ -28,7 +28,7 @@ PTE 的 `A/D` 位交由硬件按 RISC-V 语义置位，dump 只输出 ABI 规定
 
 ### 2.4 受控拷贝、fork 与 exec
 
-系统调用不再直接解引用用户指针：`copyin/copyout` 逐页调用 `walkaddr`，检查 `V/U` 及写权限，跨页时按页边界分段。`fork` 对父地址空间逐页深拷贝，遇到 guard 空洞跳过，trapframe/trampoline 不复制；子进程重新映射自己的 trapframe。`exec` 先构建并完整填充新页表，全部成功后才替换旧页表，失败路径保留原进程地址空间。
+系统调用不再直接解引用用户指针：`copyin/copyout` 逐页调用 `walkaddr`，检查 `V/U/R` 及写权限，跨页时按页边界分段。`fork` 对父地址空间逐页深拷贝，遇到 guard 空洞跳过，trapframe/trampoline 不复制；子进程重新映射自己的 trapframe。`exec` 先构建并完整填充新页表，全部成功后才替换旧页表，失败路径保留原进程地址空间。
 
 图 2：用户态系统调用经过 trapframe、页表权限检查和跨页受控拷贝。
 
@@ -70,6 +70,7 @@ TEST-4 PASS: OOM returned error after 2025 chunks; existing alloc intact; kernel
 ```bash
 make -C code clean && make -C code -j2
 python3 -m unittest discover -s code/tests -p 'test_*.py' -v
+python3 code/support/inject_uart.py --tree code --script code/support/lab3-smoke.script
 rg -n '\\(char \\*\\)addr|\\(int \\*\\)addr|\\*.*user' code/kernel
 ```
 
