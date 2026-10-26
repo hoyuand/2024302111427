@@ -60,14 +60,15 @@
 ## 7. Git 归档
 
 ```text
-commit: 待最终提交后填写
+implementation commit: 13be32d（Lab4 代码、测试与验收材料）
+delivery commit: 由 `lab4-submit` 标签指向的最终归档提交
 lab4-start: 67589ef（保留的 Lab3 开始标记）
-lab4: 待填写
-lab4-submit: 待填写
+lab4: lab4-submit 所指提交
+lab4-submit: 最终归档提交
 origin: https://github.com/hoyuand/2024302111427.git
-提交归档: 提交-lab4-2024302111427.zip（待生成）
-代码增量包: code/archives/lab4-code-delta-2024302111427.zip（待生成）
-工作区: 待提交后由 git status --short --branch 确认干净
+提交归档: `提交-lab4-2024302111427.zip`（交付时生成并校验）
+代码增量包: `code/archives/lab4-code-delta-2024302111427.zip`（交付时生成并校验）
+工作区: 交付前由 `git status --short --branch` 确认干净
 ```
 
 归档使用最终 `lab4-submit` 标签；`main`、`lab4`、`lab4-submit` 必须指向同一提交。ZIP 生成后检查可打开、内容完整并保持不进入源码仓库。
