@@ -62,7 +62,7 @@
 ```text
 implementation commit: 13be32d（Lab4 代码、测试与验收材料）
 delivery commit: 由 `lab4-submit` 标签指向的最终归档提交
-lab4-start: 67589ef（保留的 Lab3 开始标记）
+lab4-start: 313879c（`lab3-submit` 的 Lab4 回归基线）
 lab4: lab4-submit 所指提交
 lab4-submit: 最终归档提交
 origin: https://github.com/hoyuand/2024302111427.git
