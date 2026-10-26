@@ -5,17 +5,10 @@
 #define SWITCH 90
 #define END 210
 
-static void
-child(unsigned long start, unsigned long per_tick, int first, int second)
-{
-  ASSERT(setickets(first) == 0, "initial tickets rejected");
-  burn_until(start + SWITCH * per_tick);
-  ASSERT(setickets(second) == 0, "updated tickets rejected");
-  burn_until(start + END * per_tick);
-  exit(0);
-}
+static void child(unsigned long start, unsigned long per_tick,
+                  int first, int second) __attribute__((section(".text.zzz")));
 
-int
+int __attribute__((section(".text.aaa")))
 main(void)
 {
   ASSERT(setickets(500) == 0, "parent tickets rejected");
@@ -43,4 +36,14 @@ main(void)
   kill(p1); kill(p2);
   ASSERT(wait(0) > 0 && wait(0) > 0, "policy children not reaped");
   PASS("policychange");
+}
+
+static void
+child(unsigned long start, unsigned long per_tick, int first, int second)
+{
+  ASSERT(setickets(first) == 0, "initial tickets rejected");
+  burn_until(start + SWITCH * per_tick);
+  ASSERT(setickets(second) == 0, "updated tickets rejected");
+  burn_until(start + END * per_tick);
+  exit(0);
 }

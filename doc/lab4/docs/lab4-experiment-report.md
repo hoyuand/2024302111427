@@ -32,16 +32,19 @@
 
 本轮没有把终端输出伪装成截图；以下逐项记录实际命令和 UART 结果，原始终端可由同样命令复现。
 
+为保证内嵌平坦镜像从 VA 0 进入 `main`，`policychange` 的辅助函数放入 `.text.zzz`，链接脚本先放置 `.text.aaa`；这只影响该自编程序的入口布局，不改变课程赠送 ABI 文件。
+
 ## 4. 实测证据
 
 | 测试 | 命令/输入 | 真实结果 |
 |---|---|---|
 | 构建 | `make -C code clean && make -C code -j1` | 退出码 0；仅有链接器 `LOAD segment with RWX permissions` warning，未影响镜像生成 |
 | 静态资产 | `python3 -m unittest discover -s code/tests -p "test_*.py" -v` | 18/18 通过；这是结构/接口检查，不等同于运行时证明 |
-| 官方 bench | QEMU `sh>` 输入 `bench` | `RESULT avg_fork_wait = 9914`；`RESULT concurrent_children = 8`；`PASS: bench`，随后回到 `sh>` |
+| 官方 bench | QEMU `sh>` 输入 `bench` | `RESULT avg_fork_wait = 16542`；`RESULT concurrent_children = 8`；`PASS: bench`，随后回到 `sh>` |
 | 官方 stride | QEMU `sh>` 输入 `stride_test` | `RESULT stride_ratio = 75:225`；6 个 50-tick 窗口均有两个子进程运行；`PASS: stride` |
 | 自编抢占 | QEMU `sh>` 输入 `alt` | 输出为 16 轮交错的 `ABAB...`，含 16 个 `A`、16 个 `B`；`PASS: alt` |
-| 接口边界 | QEMU `sh>` 输入 `lab4check` | `RESULT abi_boundaries = 10`；`RESULT sleep_wait = 6 children x 6 pauses; elapsed=9080419`；`PASS: lab4check` |
+| 接口边界 | QEMU `sh>` 输入 `lab4check` | `RESULT abi_boundaries = 10`；`RESULT sleep_wait = 6 children x 6 pauses; elapsed=9007604`；`PASS: lab4check` |
+| 改票策略 | QEMU `sh>` 输入 `policychange` | `RESULT policy_before = 20:60`；`RESULT policy_after = 60:20`；`PASS: policychange` |
 | Lab2 回归 | 四个 `inject_uart.py` 脚本 | smoke、bufstorm、overflow、spin 均通过各自 `EXPECT`，并回到 shell |
 | Lab3 回归 | `lab3-smoke.script` | `badaccess` 的 TEST-3a/3b 均 PASS；`memcap` 报告 OOM 回滚且内核存活 |
 

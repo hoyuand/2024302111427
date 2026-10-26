@@ -35,7 +35,7 @@ fork 分配失败释放子页表并回到 UNUSED，父进程不变；exec 仅在
 1. 官方 bench：以增量包真实源码为准，100轮 fork/exit/wait + 8子进程并发；与说明书旧示例16轮不同。
 2. 官方 stride_test：7:21票，6个50tick窗口，b/a在2.4–3.6之间且每窗口均有CPU。
 3. 自写策略测试：改票前后1:3与3:1份额反转；自写边界测试：setickets(0)、非法pid/指针、pause、退出码与反复回收。
-4. 自写alt检查计算进程A/B交错；真实重现丢失唤醒的隔离调试构建，恢复正确顺序后bench通过。
+4. 自写 alt 检查计算进程 A/B 交错；丢失唤醒是锁序设计风险，本轮未执行故障构建，正常锁序由 `lab4check`、`bench` 和 `stride_test` 的真实 QEMU 结果验证。
 5. Lab0–Lab3静态检查、真实构建、Lab1启动、Lab2四组UART、Lab3 badaccess/memcap及页表dump回归。
 
 仅交付并验收 -smp 1；不声称双核支持。本文件先于Lab4实现写入。

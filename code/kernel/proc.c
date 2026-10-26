@@ -362,13 +362,16 @@ void proc_wakeup(void *chan)
 {
   for (int i = 0; i < NPROC; i++) {
     struct proc *p = &ptable[i];
-    /* All callers run with interrupts disabled on the single graded hart.
-     * Avoid taking a sleeper's lock here: scheduler may still own it across
-     * the swtch hand-off, and no concurrent writer exists on this hart. */
-    if (p == current_proc || p->state != SLEEPING) continue;
+    /* The caller may be waking a process that is sleeping on the same
+     * channel, so the state/channel check and transition must be protected
+     * by that process's lock.  The current process is already locked by its
+     * sleep/exit path and must not be acquired recursively. */
+    if (p == current_proc) continue;
+    acquire(&p->lock);
     if (p->state == SLEEPING && p->chan == chan) {
       p->state = RUNNABLE; p->chan = 0; align_pass(p);
     }
+    release(&p->lock);
   }
 }
 
