@@ -20,7 +20,8 @@ GitHub 仓库：<https://github.com/hoyuand/2024302111427>（克隆地址：`htt
 | Lab1 | 完成启动汇编、M 态到 S 态切换、PMP、UART、`printf` 和个性化 banner，并通过 QEMU 回归检查 | [`doc/lab1/`](doc/lab1/) |
 | Lab2 | 完成 U/S 态陷阱、系统调用、UART 输入环形缓冲、内嵌程序加载和最小进程生命周期 | [`doc/lab2/`](doc/lab2/) |
 | Lab3 | 完成位图物理页分配器、SV39 页表、用户地址空间、copyin/copyout、sbrk、fork/exec 与 OOM/越界测试 | [`doc/lab3/`](doc/lab3/) |
-| Lab4–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
+| Lab4 | 完成内核上下文切换、每进程锁、sleep/wakeup 与学号策略步长调度 | [`doc/lab4/`](doc/lab4/) |
+| Lab5–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
 
 每个实验目录包含一个精简索引 README、`images/` 图片目录和 `docs/` 中文主报告。教师可从对应的 `doc/labN/README.md` 进入主报告；PNG 是展示图，需要编辑时可使用同目录的 Mermaid 源文件。说明书要求映射集中保存在 [`course-config/`](course-config/)。
 
@@ -88,6 +89,8 @@ git push origin main lab3-start lab3 lab3-submit
 git archive --format=zip -o 提交-lab3-2024302111427.zip lab3-submit
 git ls-remote origin refs/heads/main refs/tags/lab3-start^{} refs/tags/lab3^{} refs/tags/lab3-submit^{}
 ```
+
+Lab4 使用 `lab4-start`（Lab3 回归基线）、`lab4`、`lab4-submit` 三个标签。提交前执行真实构建、官方 `bench`、`stride_test`、自编交错输出测试及 Lab0–Lab3 回归；报告区分静态检查与 QEMU 实测。代码增量包为 `code/archives/lab4-code-delta-2024302111427.zip`，提交归档为 `提交-lab4-2024302111427.zip`，ZIP 不提交到源码仓库。
 
 ## 课程说明
 

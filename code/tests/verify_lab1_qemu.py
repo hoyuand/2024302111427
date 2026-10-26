@@ -35,14 +35,26 @@ def capture(extra_args=()):
 
 
 def assert_lab1_prefix(output, expected):
-    """Lab2 may append an interactive shell prompt after the Lab1 banner."""
+    """Lab2/Lab3/Lab4 may append diagnostics after the Lab1 banner.
+
+    The banner is a byte-exact prefix.  Later labs legitimately print a
+    strict page-table dump before the shell prompt, so rejecting every suffix
+    would turn a valid regression boot into a false failure.
+    """
     if not output.startswith(expected):
         raise SystemExit(
             "Lab1 UART prefix mismatch\n"
             f"expected_prefix={expected!r}\nactual={output!r}"
         )
     suffix = output[len(expected):]
-    if suffix not in (b"", b"sh> "):
+    if suffix in (b"", b"sh> "):
+        return
+    row = (
+        rb"(?:L[12] va=0x[0-9a-f]+ pa=0x[0-9a-f]+ perm=----\n|"
+        rb"LEAF va=0x[0-9a-f]+ pa=0x[0-9a-f]+ perm=[r-][w-][x-][u-]\n)"
+    )
+    page_dump = rb"DUMP-PAGETABLE begin\n" + row + rb"+DUMP-PAGETABLE end\n(?:sh> )?"
+    if not re.fullmatch(page_dump, suffix):
         raise SystemExit(f"unexpected output after Lab1 prefix: {suffix!r}")
 
 

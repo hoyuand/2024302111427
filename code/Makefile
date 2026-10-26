@@ -9,13 +9,13 @@ QEMU = qemu-system-riscv64
 .NOTPARALLEL:
 
 OBJS = kernel/entry.o kernel/start.o kernel/console.o kernel/printf.o \
-       kernel/main.o kernel/proc.o kernel/syscall.o kernel/trap.o kernel/vm.o \
+       kernel/main.o kernel/proc.o kernel/swtch.o kernel/syscall.o kernel/trap.o kernel/vm.o \
        kernel/trampoline.o kernel/trampoline_anchor.o kernel/userimg.o
 
-UPROGS = sh hi spin badecall bufstorm badaccess memcap
+UPROGS = sh hi spin badecall bufstorm badaccess memcap alt lab4check policychange bench lottery_test stride_test
 UFLAGS = -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding \
          -nostdlib -fno-common -ggdb -march=rv64gc \
-         -fno-stack-protector -fno-pie -mno-relax -I.
+         -fno-stack-protector -fno-pie -mno-relax -DSID=2024302111427 -I.
 
 kernel/kernel: $(OBJS) kernel/kernel.ld kernel/lab3.ld
 	$(LD) -T kernel/lab3.ld -o $@ $(OBJS)
@@ -29,14 +29,29 @@ kernel/kernel: $(OBJS) kernel/kernel.ld kernel/lab3.ld
 user/usys.S: user/usys.pl
 	perl user/usys.pl > user/usys.S
 
-user-flat/%.bin: user/%.c user/user.h user/ulib.c user/printf.c user/usys.S user/user-lab3.ld
+USER_LIB_OBJS = user-flat/ulib.o user-flat/printf.o user-flat/usys.o user-flat/common.o
+
+user-flat/ulib.o: user/ulib.c user/user.h
 	mkdir -p user-flat
-	$(CC) $(UFLAGS) -Iuser -c user/ulib.c   -o user-flat/ulib.o
-	$(CC) $(UFLAGS) -Iuser -c user/printf.c -o user-flat/printf.o
-	$(CC) $(UFLAGS) -Iuser -c user/usys.S   -o user-flat/usys.o
-	$(CC) $(UFLAGS) -Iuser -c $<            -o user-flat/$*.o
+	$(CC) $(UFLAGS) -Iuser -c $< -o $@
+
+user-flat/printf.o: user/printf.c user/user.h
+	mkdir -p user-flat
+	$(CC) $(UFLAGS) -Iuser -c $< -o $@
+
+user-flat/usys.o: user/usys.S user/usys.pl
+	mkdir -p user-flat
+	$(CC) $(UFLAGS) -Iuser -c $< -o $@
+
+user-flat/common.o: user/common.c user/common.h user/user.h
+	mkdir -p user-flat
+	$(CC) $(UFLAGS) -Iuser -c $< -o $@
+
+user-flat/%.bin: user/%.c user/user.h user/user-lab3.ld $(USER_LIB_OBJS)
+	mkdir -p user-flat
+	$(CC) $(UFLAGS) -Iuser -c $< -o user-flat/$*.o
 	$(LD) -T user/user-lab3.ld -o user-flat/$*.elf \
-	    user-flat/$*.o user-flat/ulib.o user-flat/printf.o user-flat/usys.o
+	    user-flat/$*.o $(USER_LIB_OBJS)
 	$(OBJCOPY) -O binary user-flat/$*.elf $@
 
 kernel/userimg.S: Makefile $(addprefix user-flat/,$(UPROGS:=.bin))

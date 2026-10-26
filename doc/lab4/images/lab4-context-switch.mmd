@@ -1,0 +1,7 @@
+flowchart LR
+    A["Process A kernel stack"] -->|sched holds A.p->lock| S["scheduler context"]
+    S -->|choose RUNNABLE B| B["Process B kernel stack"]
+    B -->|timer / yield| S
+    S -->|choose A later| A
+    C["swtch ABI<br/>ra sp s0-s11 = 14 regs"] -.-> S
+    D["trapframe / trampoline<br/>user registers"] -.-> A

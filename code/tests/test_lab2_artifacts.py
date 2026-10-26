@@ -15,7 +15,9 @@ class Lab2ArtifactsTest(unittest.TestCase):
             "kernel/fcntl.h": "c8c2a7fa8a9c432be55dcd4bd6db9429c88c3a95cec6f79a576968b36048e166",
             "kernel/param.h": "2e231d4c792da80c39668de92d56c28e9d24fd1bdc190435f7ce4025d24bbb59",
             "kernel/stat.h": "653da9a25a16140de6733b0fa87d2988d0dee962fe75ab5f17fcb50d19e3f8be",
-            "kernel/syscall.h": "cd8b85b251ca89434ce0ce31d86d98521b8ecb3e2b224d95c74db6ee9948525f",
+            # Lab4 extends this historical ABI header with syscall 23--25;
+            # byte exactness for the superseding gift is checked in
+            # test_lab4_artifacts.py.
             # Lab3 v2 intentionally supersedes the Lab2 trampoline gift with
             # the executable, page-aligned trampsec declaration.
             "kernel/trampoline.S": "c3e6f230ed2f828e82571efe687930ecb5e5ef1454679b91fa4247d6bb896c1e",
@@ -29,9 +31,9 @@ class Lab2ArtifactsTest(unittest.TestCase):
             "user/sh.c": "112a764f79d690b0d1a013c25c184e93df075b2b8c6bdc8f582b61c273692661",
             "user/spin.c": "dcf1b6e196705428c18b1a7ad63e3d8f8ea2422974fc15bc5e1dbc65c380bbf5",
             "user/ulib.c": "0bb30cebbd735f730e335e807742e0d20ddf5779d534714f558a606aac2d7a4b",
-            "user/user.h": "7bdb892e879d1ef3affc682e3ae9a6c13e965c87b35fb838a413cfa3a48f25d4",
+            # Superseded by the Lab4 user ABI header.
             "user/user.ld": "d0285fe236059fcac87c547a8ea5fc3a304bf78e1e38ec932bf2dd95862c74a6",
-            "user/usys.pl": "377fa27e4f7c07436fb487be27ef6c004ba1ddc4f018da0a19139e8946653e58",
+            # Superseded by the Lab4 user syscall stubs.
         }
         for relative, digest in expected.items():
             actual = hashlib.sha256((CODE / relative).read_bytes()).hexdigest()

@@ -55,16 +55,6 @@ sys_read(struct trapframe *tf)
     return 0;
 
   consoleintr();
-  while (!console_input_available()) {
-    /* There is no sleep/wakeup yet, so park in WFI with the kernel trap
-     * vector installed. Lab4 can replace this bounded wait with a queue. */
-    trap_wait_begin();
-    intr_on();
-    while (!console_input_available())
-      asm volatile("wfi");
-    intr_off();
-    trap_wait_end();
-  }
   char tmp[128];
   int got = console_read(tmp, n > (int)sizeof(tmp) ? (int)sizeof(tmp) : n);
   if (got > 0 && copyout(current_proc->pagetable, addr, tmp, got) < 0)
@@ -156,6 +146,17 @@ syscall_dispatch(struct trapframe *tf)
   case SYS_exec: return sys_exec(tf);
   case SYS_getpid: return proc_getpid();
   case SYS_sbrk: return sys_sbrk(tf);
+  case SYS_pause: return proc_pause((int)tf->a0);
+  case SYS_time_rdtime: return proc_time_rdtime();
+  case SYS_setickets: return proc_settickets((int)tf->a0);
+  case SYS_kill: return proc_kill((int)tf->a0);
+  case SYS_schedstat: {
+    int cpu, slice;
+    if (proc_schedstat((int)tf->a0, &cpu, &slice) < 0) return (uint64)-1;
+    if (copyout(current_proc->pagetable, tf->a1, &cpu, sizeof(cpu)) < 0 ||
+        copyout(current_proc->pagetable, tf->a2, &slice, sizeof(slice)) < 0) return (uint64)-1;
+    return 0;
+  }
   default: return (uint64)-1;
   }
 }

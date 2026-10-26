@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant P as Process P
+    participant L as Condition lock
+    participant PL as P lock
+    participant S as Scheduler
+    participant W as Waker
+    P->>PL: acquire(p->lock)
+    P->>L: release(condition lock)
+    P->>P: chan=key; state=SLEEPING
+    P->>S: sched() / swtch
+    W->>PL: acquire(p->lock)
+    W->>P: state=RUNNABLE
+    W->>PL: release(p->lock)
+    S-->>P: resume; reacquire condition lock

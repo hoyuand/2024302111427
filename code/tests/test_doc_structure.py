@@ -7,7 +7,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 class DocumentationStructureTest(unittest.TestCase):
     def test_each_lab_has_one_indexed_chinese_report(self):
-        for lab in ("lab0", "lab1", "lab2"):
+        for lab in ("lab0", "lab1", "lab2", "lab3", "lab4"):
             base = REPO / "doc" / lab
             self.assertTrue((base / "README.md").is_file(), lab)
             self.assertTrue((base / "images").is_dir(), lab)

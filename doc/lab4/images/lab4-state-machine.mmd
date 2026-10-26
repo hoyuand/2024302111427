@@ -1,0 +1,13 @@
+stateDiagram-v2
+    [*] --> UNUSED
+    UNUSED --> RUNNABLE: allocproc / load
+    RUNNABLE --> RUNNING: scheduler selects
+    RUNNING --> RUNNABLE: yield / preempt
+    RUNNING --> SLEEPING: sleep(chan, lk)
+    SLEEPING --> RUNNABLE: wakeup / kill
+    RUNNING --> ZOMBIE: exit(status)
+    ZOMBIE --> UNUSED: parent wait reclaims
+    note right of SLEEPING
+      p->lock held while state and chan change
+      condition lock is reacquired after wakeup
+    end note

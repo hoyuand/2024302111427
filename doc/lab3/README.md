@@ -8,8 +8,7 @@
 doc/lab3/
 ├── README.md
 ├── docs/
-│   ├── lab3-experiment-report.md
-│   └── lab3-qemu-output.txt
+│   └── lab3-experiment-report.md
 └── images/
     ├── lab3-address-space.mmd / .png
     ├── lab3-syscall-copy.mmd / .png
@@ -17,25 +16,20 @@ doc/lab3/
     └── lab3-terminal-run.png
 ```
 
-主报告见 [`docs/lab3-experiment-report.md`](docs/lab3-experiment-report.md)。实现位于 [`code/kernel/vm.c`](../../code/kernel/vm.c)、[`code/kernel/proc.c`](../../code/kernel/proc.c) 和 [`code/kernel/syscall.c`](../../code/kernel/syscall.c)；官方测试为 [`badaccess.c`](../../code/user/badaccess.c) 与 [`memcap.c`](../../code/user/memcap.c)。课程要求原文与 ABI 留在 [`course-config/`](../../course-config/)。
+主报告见 [`docs/lab3-experiment-report.md`](docs/lab3-experiment-report.md)。实现位于 [`code/kernel/vm.c`](../../code/kernel/vm.c)、[`code/kernel/proc.c`](../../code/kernel/proc.c) 和 [`code/kernel/syscall.c`](../../code/kernel/syscall.c)；官方测试为 [`badaccess.c`](../../code/user/badaccess.c) 与 [`memcap.c`](../../code/user/memcap.c)。
 
-主报告内嵌三张黑白 Mermaid 图和一张真实 QEMU 终端截图；终端截图对应的原始输出另存为 [`docs/lab3-qemu-output.txt`](docs/lab3-qemu-output.txt)。可复现实测交互脚本为 [`code/support/lab3-smoke.script`](../../code/support/lab3-smoke.script)。
+图片索引：`lab3-address-space.png`、`lab3-address-space.mmd`、`lab3-syscall-copy.png`、`lab3-syscall-copy.mmd`、`lab3-rollback.png`、`lab3-rollback.mmd`、`lab3-terminal-run.png`。可复现实测交互脚本为 [`code/support/lab3-smoke.script`](../../code/support/lab3-smoke.script)。
 
 ## 查验命令
 
 ```bash
 make -C code clean && make -C code -j2
 qemu-system-riscv64 -machine virt -bios none -kernel code/kernel/kernel -nographic -smp 1
+python3 code/support/inject_uart.py --tree code --script code/support/lab3-smoke.script
 ```
 
 启动后可在 `sh>` 输入 `hi`、`badaccess`、`memcap`。`badaccess` 应报告两个非法访问被杀，`memcap` 应报告 OOM 返回错误且已有分配保持可用。分页观测输出必须以 `DUMP-PAGETABLE begin/end` 包围，权限字段顺序为 `R/W/X/U`。
 
-Lab3 官方路径可用以下命令复现：
-
-```bash
-python3 code/support/inject_uart.py --tree code --script code/support/lab3-smoke.script
-```
-
 ## 归档
 
-本轮提交前检查 `git diff`、构建、QEMU、官方测试、Lab2 回归和工作区状态；最终 `main`、`lab3`、`lab3-submit` 指向同一验收提交，并另生成本地 `提交-lab3-2024302111427.zip`。代码增量包为 `code/archives/lab3-code-delta-2024302111427.zip`，均不提交到源码仓库。
+本轮提交前检查 `git diff`、构建、QEMU、官方测试、Lab2 回归和工作区状态；历史 `lab3`、`lab3-submit` 标签保持不变。归档 ZIP 和代码增量包均为本地产物，不提交进源码仓库。

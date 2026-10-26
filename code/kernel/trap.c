@@ -69,15 +69,19 @@ devintr(uint64 cause)
   }
   if (code == SCAUSE_STIMER) {
     ticks++;
+    proc_clocktick();
     *(volatile uint64 *)CLINT_MTIMECMP0 =
         *(volatile uint64 *)CLINT_MTIME + LAB2_TICK * TIMER_QUANTUM;
     io_fence();
     return 2;
   }
   if (code == SCAUSE_SSOFT) {
-    *(volatile uint32 *)CLINT_BASE = 0;
-    io_fence();
+    /* Clear the delegated pending bit itself; m_trap_vector raises SSIP
+     * through the CSR because the CLINT MSIP alias is not reliable after
+     * the user page table is active. */
+    w_sip(r_sip() & ~(1ULL << 1));
     ticks++;
+    proc_clocktick();
     return 2;
   }
   return 0;
@@ -135,8 +139,13 @@ usertrap(void)
   if (cause & SCAUSE_INTERRUPT) {
     /* Interrupts resume at the interrupted instruction; only ecall skips 4. */
     tf->epc = r_sepc();
-    if (!devintr(cause))
+    int which = devintr(cause);
+    if (!which)
       proc_exit(-1);
+    if (which == 2) {
+      proc_account_tick();
+      proc_yield();
+    }
   } else if (cause == 8) {
     tf->epc = r_sepc() + 4;
     uint64 result = syscall_dispatch(tf);
@@ -148,6 +157,7 @@ usertrap(void)
     printf("lab3: unexpected user trap cause=%lx epc=%lx\n", cause, r_sepc());
     proc_exit(-1);
   }
+  if (current_proc->killed) proc_exit(-1);
   usertrapret();
 }
 
@@ -155,7 +165,10 @@ void
 kerneltrap(void *frame)
 {
   (void)frame;
+  uint64 epc = r_sepc(), status = r_sstatus();
   (void)devintr(r_scause());
+  w_sepc(epc);
+  w_sstatus(status);
 }
 
 void

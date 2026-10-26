@@ -4,6 +4,7 @@
 #include "memlayout.h"
 #include "course_sid.h"
 #include "console.h"
+#include "proc.h"
 
 #define UART_RHR 0
 #define UART_THR 0
@@ -25,6 +26,7 @@ static uint input_r;
 static uint input_w;
 static uint input_count;
 static uint input_lines;
+static spinlock_t input_lock;
 
 static inline volatile uchar *
 uart_reg(uint32 offset)
@@ -125,10 +127,12 @@ console_checksum_end(void)
 void
 consoleintr(void)
 {
+  acquire(&input_lock);
   volatile uchar *lsr = uart_reg(UART_LSR);
   volatile uchar *rhr = uart_reg(UART_RHR);
   while (*lsr & UART_LSR_DATA) {
     uchar c = *rhr;
+    if (c == 16) { proc_dump(); continue; } /* Ctrl-P: live process state. */
     if (input_count == LAB2_BUF_SIZE) {
       char dropped = input_buf[input_r];
       if ((dropped == '\n' || dropped == '\r') && input_lines != 0)
@@ -143,6 +147,8 @@ consoleintr(void)
       input_lines++;
     console_raw_putc(c);
   }
+  if (console_input_available()) proc_wakeup(&input_count);
+  release(&input_lock);
 }
 
 int
@@ -157,8 +163,12 @@ int
 console_read(char *dst, int n)
 {
   int copied = 0;
-  if (n <= 0 || !console_input_available())
-    return 0;
+  if (n <= 0) return 0;
+  acquire(&input_lock);
+  while (!console_input_available()) {
+    if (current_proc->killed) { release(&input_lock); return -1; }
+    proc_sleep(&input_count, &input_lock);
+  }
   while (copied < n && input_count != 0) {
     char c = input_buf[input_r];
     input_r = (input_r + 1) % LAB2_BUF_SIZE;
@@ -170,5 +180,6 @@ console_read(char *dst, int n)
       break;
     }
   }
+  release(&input_lock);
   return copied;
 }

@@ -30,6 +30,8 @@ start(void)
   /* Delegate the CLINT machine timer interrupt to S mode. */
   w_mie(1L << 7);
   w_sie(0);
+  /* time_rdtime is a supervisor syscall, so M mode grants S time access. */
+  w_mcounteren(r_mcounteren() | 2);
   *(volatile uint64 *)(CLINT_BASE + 0x4000) =
       *(volatile uint64 *)(CLINT_BASE + 0xbff8) + LAB2_TICK * 1000000ULL;
   asm volatile("csrw mscratch, %0" : : "r"((uint64)machine_scratch));

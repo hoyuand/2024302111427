@@ -44,9 +44,11 @@ m_trap_vector:
         add     t2, t2, t3
         li      t1, 0x02004000
         sd      t2, 0(t1)
-        li      t1, 0x02000000
-        li      t2, 1
-        sw      t2, 0(t1)
+        /* Raise delegated supervisor software interrupt directly.  This is
+         * deterministic on QEMU virt and avoids depending on CLINT MSIP
+         * visibility while the kernel is using its translated page table. */
+        li      t2, 2
+        csrs    sip, t2
 
         ld      t1, 0(t0)
         ld      t2, 8(t0)

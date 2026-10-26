@@ -44,7 +44,7 @@ PTE 的 `A/D` 位交由硬件按 RISC-V 语义置位，dump 只输出 ABI 规定
 
 ## 3. 实测证据
 
-真实 QEMU `virt` 单核输出截图如下；它包含启动页表 dump、`badaccess` 两条异常路径和 `memcap` OOM 回滚结果。原始文本输出保存在 [`lab3-qemu-output.txt`](lab3-qemu-output.txt)。
+真实 QEMU `virt` 单核输出截图如下；它包含启动页表 dump、`badaccess` 两条异常路径和 `memcap` OOM 回滚结果。
 
 ![真实 QEMU 终端运行截图](../images/lab3-terminal-run.png)
 
