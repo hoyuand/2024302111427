@@ -5,7 +5,7 @@
 #include "proc.h"
 #include "console.h"
 #include "trap.h"
-#include "vm.h"
+#include "lab5.h"
 
 #define SCAUSE_INTERRUPT (1ULL << 63)
 #define SCAUSE_STIMER    5
@@ -151,6 +151,16 @@ usertrap(void)
     uint64 result = syscall_dispatch(tf);
     if (current_proc == before)
       tf->a0 = result;
+  } else if (cause == 15) {
+    tf->epc = r_sepc();
+#if LAB5_KILL_SEMANTICS == 0
+    if (before->killed) proc_exit(-1);
+#endif
+    if (cow_alloc(before->pagetable, r_stval()) < 0) {
+      extern void printf(const char *, ...);
+      printf("lab5: rejected store va=%lx epc=%lx\n", r_stval(), r_sepc());
+      before->killed = 1;
+    }
   } else {
     extern void printf(const char *fmt, ...);
     tf->epc = r_sepc();

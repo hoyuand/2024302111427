@@ -4,7 +4,7 @@
 #include "course_sid.h"
 #include "proc.h"
 #include "trap.h"
-#include "vm.h"
+#include "lab5.h"
 #include "console.h"
 
 typedef long int64;
@@ -43,6 +43,7 @@ main(void)
 
   trapinit();
   kinit();
+  kref_selftest();
   kvminit();
   kvminithart();
   procinit();

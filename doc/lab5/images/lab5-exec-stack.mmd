@@ -1,0 +1,8 @@
+flowchart TD
+ T[stack_top 0x5000] --> S0[0x4ff0 echo字符串]
+ S0 --> S1[0x4fe0 hi字符串]
+ S1 --> PAD[0x4fd8 对齐填充]
+ PAD --> NULL[0x4fd0 argv2 NULL]
+ NULL --> V1[0x4fc8 argv1 指向0x4fe0]
+ V1 --> V0[0x4fc0 argv0 指向0x4ff0]
+ V0 --> ABI[sp=a1=0x4fc0 a0=2]

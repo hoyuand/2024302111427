@@ -2,21 +2,13 @@
 #include "riscv.h"
 #include "memlayout.h"
 #include "course_sid.h"
-#include "vm.h"
+#include "lab5.h"
 #include "proc.h"
 
 extern void printf(const char *fmt, ...);
 extern char kernel_end[];
 extern void trampoline(void);
 
-#define MAX_PHYS_PAGES ((PHYSTOP - KERNBASE) / PGSIZE)
-#define BIT_BYTES ((MAX_PHYS_PAGES + 7) / 8)
-
-static uchar page_bits[BIT_BYTES];
-static uint64 alloc_start;
-static uint64 alloc_end;
-static uint free_count;
-static uint total_pages;
 static pagetable_t kernel_pagetable;
 static uint64 kernel_satp;
 static int map_track_active;
@@ -24,101 +16,6 @@ static int map_track_active;
 static pagetable_t map_new_pages[MAP_TRACK_MAX];
 static pte_t *map_parent_slots[MAP_TRACK_MAX];
 static uint map_new_count;
-
-static int
-bit_get(uint i)
-{
-  return (page_bits[i >> 3] >> (i & 7)) & 1;
-}
-
-static void
-bit_set(uint i, int value)
-{
-  if (value)
-    page_bits[i >> 3] |= (uchar)(1U << (i & 7));
-  else
-    page_bits[i >> 3] &= (uchar)~(1U << (i & 7));
-}
-
-void
-kinit(void)
-{
-  uint64 requested_start = PGROUNDUP((uint64)kernel_end);
-  uint64 reserve = (uint64)LAB3_MEMCAP_DELTA * PGSIZE;
-  alloc_start = requested_start < PHYSTOP ? requested_start : PHYSTOP;
-  alloc_end = PHYSTOP > reserve ? PHYSTOP - reserve : PHYSTOP;
-  if (alloc_end < alloc_start)
-    alloc_end = alloc_start;
-  for (uint i = 0; i < BIT_BYTES; i++)
-    page_bits[i] = 0;
-  total_pages = (uint)((alloc_end - alloc_start) / PGSIZE);
-  free_count = total_pages;
-  for (uint i = 0; i < total_pages; i++)
-    bit_set(i, 1);
-}
-
-void *
-kalloc(void)
-{
-  if (free_count == 0)
-    return 0;
-  uint wanted = 0;
-#if LAB3_ALLOC_ORDER == 1
-  for (uint i = total_pages; i != 0; i--) {
-    uint n = i - 1;
-    if (bit_get(n)) {
-      wanted = n;
-      goto found;
-    }
-  }
-#elif LAB3_ALLOC_ORDER == 2
-  {
-    uint rank = free_count / 2;
-    for (uint i = 0; i < total_pages; i++) {
-      if (bit_get(i) && rank-- == 0) {
-        wanted = i;
-        goto found;
-      }
-    }
-  }
-#else
-  for (uint i = 0; i < total_pages; i++)
-    if (bit_get(i)) {
-      wanted = i;
-      goto found;
-    }
-#endif
-  return 0;
-found:
-  bit_set(wanted, 0);
-  free_count--;
-  uchar *page = (uchar *)(alloc_start + (uint64)wanted * PGSIZE);
-  for (uint i = 0; i < PGSIZE; i++)
-    page[i] = 0;
-  return page;
-}
-
-void
-kfree(void *pa)
-{
-  uint64 a = (uint64)pa;
-  if (a < alloc_start || a >= alloc_end || (a & (PGSIZE - 1)) != 0)
-    return;
-  uint i = (uint)((a - alloc_start) / PGSIZE);
-  if (bit_get(i))
-    return;
-  uchar *page = (uchar *)a;
-  for (uint j = 0; j < PGSIZE; j++)
-    page[j] = 0x1;
-  bit_set(i, 1);
-  free_count++;
-}
-
-uint
-kfreecount(void)
-{
-  return free_count;
-}
 
 pte_t *
 walk(pagetable_t pagetable, uint64 va, int alloc)
@@ -324,6 +221,7 @@ walkaddr(pagetable_t pagetable, uint64 va, int write)
 int
 copyin(pagetable_t pagetable, void *dst, uint64 srcva, uint64 len)
 {
+  if (srcva >= MAXVA || len > MAXVA - srcva) return -1;
   uchar *d = (uchar *)dst;
   while (len) {
     uint64 pa = walkaddr(pagetable, srcva, 0);
@@ -344,6 +242,7 @@ copyin(pagetable_t pagetable, void *dst, uint64 srcva, uint64 len)
 int
 copyout(pagetable_t pagetable, uint64 dstva, const void *src, uint64 len)
 {
+  if (uvm_check_range(pagetable, dstva, len, PTE_R | PTE_W) < 0) return -1;
   const uchar *s = (const uchar *)src;
   while (len) {
     uint64 pa = walkaddr(pagetable, dstva, 1);
@@ -407,24 +306,90 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
 {
   for (uint64 va = 0; va < sz; va += PGSIZE) {
     pte_t *pte = walk(old, va, 0);
-    if (!pte || !(*pte & PTE_V))
-      continue;
-    if (!(*pte & PTE_U))
-      continue;
-    void *mem = kalloc();
-    if (!mem)
+    if (!pte || !(*pte & PTE_V) || !(*pte & PTE_U))
+      continue; /* guard holes and supervisor-only mappings are not COW. */
+    uint64 pa = PTE2PA(*pte);
+    uint flags = PTE_FLAGS(*pte);
+    if (flags & PTE_W) flags = (flags & ~PTE_W) | PTE_COW;
+#if LAB5_REFCNT_SCHEME == 0
+    if ((flags & PTE_COW) && kref_get(pa) >= 2) flags |= PTE_RSW1;
+#endif
+    *pte = PA2PTE(pa) | flags;
+    if (mappages(new, va, PGSIZE, pa, flags & ~PTE_V) < 0)
       goto bad;
-    uchar *src = (uchar *)PTE2PA(*pte);
-    for (uint i = 0; i < PGSIZE; i++)
-      ((uchar *)mem)[i] = src[i];
-    if (mappages(new, va, PGSIZE, (uint64)mem, PTE_FLAGS(*pte) & ~PTE_V) < 0) {
-      kfree(mem);
-      goto bad;
-    }
+    kref_inc(pa);
   }
+  sfence_vma();
   return 0;
 bad:
   uvmfree(new, sz);
+  /* A parent page can remain COW with ref=1 after rollback; its next write
+   * restores W in place without allocating. */
+  sfence_vma();
+  return -1;
+}
+
+static spinlock_t cow_lock;
+
+int
+cow_alloc(pagetable_t pagetable, uint64 va)
+{
+  if (va >= MAXVA) return -1;
+  acquire(&cow_lock);
+  pte_t *pte = walk(pagetable, PGROUNDDOWN(va), 0);
+  if (!pte || !(*pte & PTE_V) || !(*pte & PTE_U) || !(*pte & PTE_R)) goto bad;
+  if (*pte & PTE_W) { release(&cow_lock); return 0; }
+  if (!(*pte & PTE_COW)) goto bad;
+  uint64 oldpa = PTE2PA(*pte);
+  uint flags = (PTE_FLAGS(*pte) & ~(PTE_COW | PTE_RSW1)) | PTE_W;
+  uint refs = kref_get(oldpa);
+  if (refs == 0) goto bad;
+  if (refs == 1) {
+    *pte = PA2PTE(oldpa) | flags;
+  } else {
+    uchar *page = kalloc();
+    if (!page) goto bad;
+    for (uint i = 0; i < PGSIZE; i++) page[i] = ((uchar *)oldpa)[i];
+    *pte = PA2PTE(page) | flags;
+    kcow_record_copy();
+    if (current_proc && ++current_proc->cow_copies == LAB5_COW_BUDGET)
+      printf("[cow] pid=%d reached LAB5_COW_BUDGET=%d, downgrade: continue copying\n",
+             current_proc->pid, LAB5_COW_BUDGET);
+    kfree((void *)oldpa);
+  }
+  sfence_vma();
+  release(&cow_lock);
+  return 0;
+bad:
+  release(&cow_lock);
+  return -1;
+}
+
+int
+uvm_check_range(pagetable_t pt, uint64 va, uint64 len, int want)
+{
+  if (va >= MAXVA || len > MAXVA - va) return -1;
+  if (!len) return 0;
+  uint64 end = va + len;
+  for (uint64 a = PGROUNDDOWN(va); a < end; a += PGSIZE) {
+    pte_t *pte = walk(pt, a, 0);
+    if (!pte || !(*pte & PTE_V) || !(*pte & PTE_U)) return -1;
+    if ((want & PTE_W) && !(*pte & PTE_W)) {
+      if (!(*pte & PTE_COW) || cow_alloc(pt, a) < 0) return -1;
+      pte = walk(pt, a, 0);
+    }
+    if ((*pte & want) != (uint)want) return -1;
+  }
+  return 0;
+}
+
+int
+copyinstr(pagetable_t pt, char *dst, uint64 va, uint64 max)
+{
+  for (uint64 i = 0; i < max; i++) {
+    if (va + i < va || copyin(pt, dst + i, va + i, 1) < 0) return -1;
+    if (!dst[i]) return (int)i + 1;
+  }
   return -1;
 }
 

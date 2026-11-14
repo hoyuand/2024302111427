@@ -53,6 +53,7 @@ def assert_lab1_prefix(output, expected):
         rb"(?:L[12] va=0x[0-9a-f]+ pa=0x[0-9a-f]+ perm=----\n|"
         rb"LEAF va=0x[0-9a-f]+ pa=0x[0-9a-f]+ perm=[r-][w-][x-][u-]\n)"
     )
+    suffix = re.sub(rb"^KREF-SELFTEST PASS refs=1,3,2,1,0 free=[0-9]+ shared=0\n", b"", suffix)
     page_dump = rb"DUMP-PAGETABLE begin\n" + row + rb"+DUMP-PAGETABLE end\n(?:sh> )?"
     if not re.fullmatch(page_dump, suffix):
         raise SystemExit(f"unexpected output after Lab1 prefix: {suffix!r}")

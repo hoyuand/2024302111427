@@ -5,7 +5,7 @@
 #include "console.h"
 #include "trap.h"
 #include "syscall.h"
-#include "vm.h"
+#include "lab5.h"
 
 static int
 argint(struct trapframe *tf, int n, int *value)
@@ -26,34 +26,17 @@ argaddr(struct trapframe *tf, int n, uint64 *value)
 }
 
 static int
-argstr(struct trapframe *tf, int n, uint64 *value)
-{
-  uint64 addr;
-  if (argaddr(tf, n, &addr) < 0)
-    return -1;
-  *value = addr;
-  for (uint i = 0; i < 256; i++) {
-    char c;
-    if (copyin(current_proc->pagetable, &c, addr + i, 1) < 0)
-      return -1;
-    if (c == 0)
-      return (int)i;
-  }
-  return -1;
-}
-
-static int
 sys_read(struct trapframe *tf)
 {
   int fd, n;
   uint64 addr;
   if (argint(tf, 0, &fd) < 0 || argaddr(tf, 1, &addr) < 0 ||
-      argint(tf, 2, &n) < 0 || fd != 0 || n < 0 ||
-      n < 0)
+      argint(tf, 2, &n) < 0 || fd != 0 || n < 0)
     return -1;
   if (n == 0)
     return 0;
 
+  if (uvm_check_range(current_proc->pagetable, addr, (uint)n, PTE_R | PTE_W) < 0) return -1;
   consoleintr();
   char tmp[128];
   int got = console_read(tmp, n > (int)sizeof(tmp) ? (int)sizeof(tmp) : n);
@@ -68,8 +51,7 @@ sys_write(struct trapframe *tf)
   int fd, n;
   uint64 addr;
   if (argint(tf, 0, &fd) < 0 || argaddr(tf, 1, &addr) < 0 ||
-      argint(tf, 2, &n) < 0 || (fd != 1 && fd != 2) || n < 0 ||
-      n < 0)
+      argint(tf, 2, &n) < 0 || (fd != 1 && fd != 2) || n < 0)
     return -1;
   for (int i = 0; i < n; i++) {
     consoleintr();
@@ -84,21 +66,33 @@ sys_write(struct trapframe *tf)
 static int
 sys_exec(struct trapframe *tf)
 {
-  uint64 name_addr;
-  if (argstr(tf, 0, &name_addr) < 0)
-    return -1;
-  char local[16];
-  int i;
-  for (i = 0; i < (int)sizeof(local) - 1; i++) {
-    if (copyin(current_proc->pagetable, &local[i], name_addr + i, 1) < 0)
-      return -1;
-    if (local[i] == 0)
-      break;
+  char name[MAXPATH];
+  uint64 uargv;
+  struct proc *p = current_proc;
+  if (copyinstr(p->pagetable, name, tf->a0, sizeof(name)) < 0 ||
+      argaddr(tf, 1, &uargv) < 0) return -1;
+  char *buf = kalloc();
+  if (!buf) return -1;
+  const char *argv[MAXARG];
+  int argc = 0;
+  uint used = 0;
+  for (;;) {
+    uint64 arg;
+    if (uargv + (uint64)argc * sizeof(arg) < uargv ||
+        copyin(p->pagetable, &arg, uargv + argc * sizeof(arg), sizeof(arg)) < 0) goto bad;
+    if (!arg) break;
+    if (argc == MAXARG - 1 || used == PGSIZE) goto bad;
+    int len = copyinstr(p->pagetable, buf + used, arg, PGSIZE - used);
+    if (len < 0) goto bad;
+    argv[argc++] = buf + used;
+    used += len;
   }
-  for (int j = 0; j < i; j++)
-    if (local[j] == '\n' || local[j] == '\r') { local[j] = 0; break; }
-  local[sizeof(local) - 1] = 0;
-  return proc_exec(local);
+  int result = proc_exec(name, argc, argv);
+  kfree(buf);
+  return result;
+bad:
+  kfree(buf);
+  return -1;
 }
 
 static uint64
@@ -146,6 +140,10 @@ syscall_dispatch(struct trapframe *tf)
   case SYS_exec: return sys_exec(tf);
   case SYS_getpid: return proc_getpid();
   case SYS_sbrk: return sys_sbrk(tf);
+  case SYS_pmc:
+    if ((int)tf->a0 == 0) return kcow_copy_count();
+    if ((int)tf->a0 == 1) return kshared_count();
+    return (uint64)-1;
   case SYS_pause: return proc_pause((int)tf->a0);
   case SYS_time_rdtime: return proc_time_rdtime();
   case SYS_setickets: return proc_settickets((int)tf->a0);

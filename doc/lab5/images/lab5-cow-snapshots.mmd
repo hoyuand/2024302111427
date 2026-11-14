@@ -1,0 +1,13 @@
+flowchart LR
+ subgraph T1[1 fork完成]
+ P1[父 W0 COW1] --> A1[PA0 ref2]
+ C1[子 W0 COW1] --> A1
+ end
+ subgraph T2[2 子先写]
+ P2[父 W0 COW1] --> A2[PA0 ref1]
+ C2[子 W1 COW0] --> B2[PA1 ref1]
+ end
+ subgraph T3[3 父后写]
+ P3[父 W1 COW0 原地恢复] --> A3[PA0 ref1]
+ C3[子 W1 COW0] --> B3[PA1 ref1]
+ end

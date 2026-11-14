@@ -16,4 +16,6 @@
 * [Lab3：物理页分配与 SV39 虚拟内存](lab3/) — 主报告：[lab3-experiment-report.md](lab3/docs/lab3-experiment-report.md)
 * [Lab4：进程上下文切换、阻塞唤醒与步长调度](lab4/) — 主报告：[lab4-experiment-report.md](lab4/docs/lab4-experiment-report.md)
 
+* [Lab5：COW fork、引用计数与exec参数栈](lab5/) — 主报告：[lab5-experiment-report.md](lab5/docs/lab5-experiment-report.md)
+
 查看顺序：先看该 Lab 的 README 了解文件位置，再阅读唯一主报告；PNG 图和真实终端截图已嵌入报告，源图文件留在 `images/` 供复查和修改。

@@ -10,9 +10,10 @@ QEMU = qemu-system-riscv64
 
 OBJS = kernel/entry.o kernel/start.o kernel/console.o kernel/printf.o \
        kernel/main.o kernel/proc.o kernel/swtch.o kernel/syscall.o kernel/trap.o kernel/vm.o \
-       kernel/trampoline.o kernel/trampoline_anchor.o kernel/userimg.o
+       kernel/trampoline.o kernel/trampoline_anchor.o kernel/userimg.o kernel/kalloc.o
 
 UPROGS = sh hi spin badecall bufstorm badaccess memcap alt lab4check policychange bench lottery_test stride_test
+UPROGS += zerocopy cowpair echo cowtest cowoom vmtest
 UFLAGS = -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding \
          -nostdlib -fno-common -ggdb -march=rv64gc \
          -fno-stack-protector -fno-pie -mno-relax -DSID=2024302111427 -I.
@@ -20,7 +21,7 @@ UFLAGS = -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding \
 kernel/kernel: $(OBJS) kernel/kernel.ld kernel/lab3.ld
 	$(LD) -T kernel/lab3.ld -o $@ $(OBJS)
 
-%.o: %.c kernel/riscv.h kernel/course_sid.h
+%.o: %.c kernel/riscv.h kernel/course_sid.h kernel/proc.h kernel/vm.h kernel/lab5.h
 	$(CC) $(CFLAGS) -Ikernel -c -o $@ $<
 
 %.o: %.S
@@ -29,7 +30,7 @@ kernel/kernel: $(OBJS) kernel/kernel.ld kernel/lab3.ld
 user/usys.S: user/usys.pl
 	perl user/usys.pl > user/usys.S
 
-USER_LIB_OBJS = user-flat/ulib.o user-flat/printf.o user-flat/usys.o user-flat/common.o
+USER_LIB_OBJS = user-flat/ulib.o user-flat/printf.o user-flat/usys.o user-flat/common.o user-flat/sh_input.o
 
 user-flat/ulib.o: user/ulib.c user/user.h
 	mkdir -p user-flat
@@ -47,9 +48,13 @@ user-flat/common.o: user/common.c user/common.h user/user.h
 	mkdir -p user-flat
 	$(CC) $(UFLAGS) -Iuser -c $< -o $@
 
+user-flat/sh_input.o: user/sh_input.c user/user.h
+	mkdir -p user-flat
+	$(CC) $(UFLAGS) -Iuser -c $< -o $@
+
 user-flat/%.bin: user/%.c user/user.h user/user-lab3.ld $(USER_LIB_OBJS)
 	mkdir -p user-flat
-	$(CC) $(UFLAGS) -Iuser -c $< -o user-flat/$*.o
+	$(CC) $(UFLAGS) $(if $(filter sh,$*),-Dgets=lab5_gets) -Iuser -c $< -o user-flat/$*.o
 	$(LD) -T user/user-lab3.ld -o user-flat/$*.elf \
 	    user-flat/$*.o $(USER_LIB_OBJS)
 	$(OBJCOPY) -O binary user-flat/$*.elf $@

@@ -29,7 +29,7 @@ class Lab3ArtifactsTest(unittest.TestCase):
         vm = (REPO / "code/kernel/vm.c").read_text(encoding="utf-8")
         syscall = (REPO / "code/kernel/syscall.c").read_text(encoding="utf-8")
         makefile = (REPO / "code/Makefile").read_text(encoding="utf-8")
-        self.assertIn("LAB3_ALLOC_ORDER", vm)
+        self.assertIn("LAB3_ALLOC_ORDER", (REPO / "code/kernel/kalloc.c").read_text(encoding="utf-8"))
         self.assertIn("mappages", vm)
         self.assertIn("copyin", syscall)
         self.assertIn("copyout", syscall)

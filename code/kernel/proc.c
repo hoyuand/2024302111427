@@ -2,7 +2,7 @@
 #include "riscv.h"
 #include "memlayout.h"
 #include "course_sid.h"
-#include "vm.h"
+#include "lab5.h"
 #include "proc.h"
 
 extern void printf(const char *fmt, ...);
@@ -233,7 +233,7 @@ void procinit(void)
   p->pid = 1; p->state = USED; p->parent = 0;
   p->tickets = default_tickets("sh"); p->stride = 1000 / p->tickets; if (!p->stride) p->stride = 1;
   current_proc = p;
-  if (proc_exec("sh") < 0) { printf("lab4: embedded sh missing or memory exhausted\n"); for (;;) asm volatile("wfi"); }
+  if (proc_exec("sh", 0, 0) < 0) { printf("lab4: embedded sh missing or memory exhausted\n"); for (;;) asm volatile("wfi"); }
   p->state = RUNNABLE;
 }
 void proc_map_trapframe(void)
@@ -248,13 +248,29 @@ int user_range(const void *addr, uint n)
   return current_proc && current_proc->pagetable &&
          (n == 0 ? a < TRAPFRAME : a < TRAPFRAME && (uint64)n <= TRAPFRAME - a);
 }
-int proc_exec(const char *name)
+int proc_exec(const char *name, int argc, const char *const argv[])
 {
+  if (argc < 0 || argc >= MAXARG || (argc && !argv)) return -1;
   struct proc *p = current_proc; pagetable_t newpt; uint newmemsz, newbrk; uint64 newstack_top;
   if (load_program(p, name, &newpt, &newmemsz, &newbrk, &newstack_top) < 0) return -1;
+  uint64 sp = newstack_top, ustack[MAXARG];
+  uint64 bottom = newstack_top - USERSTACK * PGSIZE;
+  for (int i = 0; i < argc; i++) {
+    uint len = kstrlen(argv[i]) + 1;
+    if (len > sp - bottom) goto badargs;
+    sp = (sp - len) & ~15ULL;
+    if (sp < bottom || copyout(newpt, sp, argv[i], len) < 0) goto badargs;
+    ustack[i] = sp;
+  }
+  ustack[argc] = 0;
+  if ((uint64)(argc + 1) * sizeof(uint64) > sp - bottom) goto badargs;
+  sp = (sp - (argc + 1) * sizeof(uint64)) & ~15ULL;
+  if (sp < bottom || copyout(newpt, sp, ustack, (argc + 1) * sizeof(uint64)) < 0) goto badargs;
   pagetable_t oldpt = p->pagetable; p->pagetable = newpt; p->memsz = newmemsz;
   p->brk = newbrk; p->sz = newbrk; p->stack_top = newstack_top; copy_name(p->name, name);
   reset_context(p);
+  p->tf.sp = sp; p->tf.a1 = sp; p->tf.a0 = argc;
+  p->cow_copies = 0;
   if (p->context.ra == 0) {
     p->context.ra = (uint64)forkret;
     p->context.sp = (uint64)(p->kstack + KSTACK_SIZE);
@@ -264,7 +280,10 @@ int proc_exec(const char *name)
     p->stride = 1000 / p->tickets; if (!p->stride) p->stride = 1;
   }
   if (oldpt) uvmfree(oldpt, 0);
-  return 0;
+  return argc;
+badargs:
+  uvmfree(newpt, 0);
+  return -1;
 }
 int proc_fork(void)
 {
@@ -278,11 +297,15 @@ int proc_fork(void)
   if (uvmcopy(parent->pagetable, child->pagetable, parent->brk) < 0) {
     child->pagetable = 0; child->state = UNUSED; return -1;
   }
+  if (map_trapframe(child->pagetable, child) < 0) {
+    uvmfree(child->pagetable, 0); child->pagetable = 0; child->state = UNUSED; return -1;
+  }
+  child->cow_copies = 0;
   child->pid = next_pid++; child->state = RUNNABLE; child->parent = parent; child->exit_status = 0;
   child->memsz = parent->memsz; child->brk = parent->brk; child->sz = parent->sz;
   child->stack_top = parent->stack_top; child->tf = parent->tf; child->tf.kernel_satp = kvmsatp();
   child->tf.kernel_sp = (uint64)(child->kstack + KSTACK_SIZE); child->tf.kernel_trap = (uint64)usertrap;
-  child->tf.a0 = 0; copy_name(child->name, parent->name); map_trapframe(child->pagetable, child);
+  child->tf.a0 = 0; copy_name(child->name, parent->name);
   for (uint i = 0; i < sizeof(child->context); i++) ((uchar *)&child->context)[i] = 0;
   child->context.ra = (uint64)forkret;
   child->context.sp = (uint64)(child->kstack + KSTACK_SIZE);

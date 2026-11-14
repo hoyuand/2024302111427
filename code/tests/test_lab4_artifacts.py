@@ -12,12 +12,11 @@ class Lab4ArtifactsTest(unittest.TestCase):
 
     def test_course_gifts_are_byte_exact(self):
         # The archive is the authority for these files.  Keeping this check
-        # here catches accidental edits to the ABI stubs and swtch assembly.
+        # here catches accidental edits to swtch assembly. Lab5 supersedes
+        # the syscall headers/stubs and checks their latest exact bytes.
         expected = {
             "kernel/swtch.S": "baff65e42b8f80e3b2ec5e1f67e2033b0b9bd7b35564db998573f576bc816088",
-            "kernel/syscall.h": "45492f1822d10f7caa1c3318f551c91d161b841f8a11fe6b8505f9bf35a47cb3",
-            "user/user.h": "cf54c6c68d60556a330625011b7e4e3239be440a28c46ffe063b1c358a193b3f",
-            "user/usys.pl": "78dd2d981c9e5194bbe7b9082d6e74980bcb286f0fb53574d1b57f1347b45b39",
+
         }
         for relative, digest in expected.items():
             path = CODE / relative

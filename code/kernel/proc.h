@@ -88,6 +88,7 @@ struct proc {
   struct context context;
   void *chan;
   int killed;
+  uint64 cow_copies;
   int cpu_ticks;
   int last_slice_ticks;
   int tickets;
@@ -108,7 +109,7 @@ void release(spinlock_t *lk);
 int holding(spinlock_t *lk);
 
 void procinit(void);
-int proc_exec(const char *name);
+int proc_exec(const char *name, int argc, const char *const argv[]);
 int proc_fork(void);
 int proc_wait(uint64 status_addr);
 void proc_exit(int status) __attribute__((noreturn));

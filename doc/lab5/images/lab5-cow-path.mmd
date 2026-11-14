@@ -1,0 +1,16 @@
+flowchart TD
+ U[用户store fault cause15] --> C[cow_alloc]
+ K[copyout和范围预检] --> C
+ C --> V{V U R及地址合法}
+ V --否--> F[返回负值 用户进程终止或copyout报错]
+ V --是--> W{已有W}
+ W --是--> OK[成功]
+ W --否--> CW{COW标记}
+ CW --否--> F
+ CW --是--> R{refcnt等于1}
+ R --是--> I[原地置W清COW]
+ R --否--> A[分配并复制 OOM保持旧页]
+ A --> M[替换PTE及记账 减旧引用]
+ I --> S[sfence.vma]
+ M --> S
+ S --> OK

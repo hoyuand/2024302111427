@@ -21,7 +21,8 @@ GitHub 仓库：<https://github.com/hoyuand/2024302111427>（克隆地址：`htt
 | Lab2 | 完成 U/S 态陷阱、系统调用、UART 输入环形缓冲、内嵌程序加载和最小进程生命周期 | [`doc/lab2/`](doc/lab2/) |
 | Lab3 | 完成位图物理页分配器、SV39 页表、用户地址空间、copyin/copyout、sbrk、fork/exec 与 OOM/越界测试 | [`doc/lab3/`](doc/lab3/) |
 | Lab4 | 完成内核上下文切换、每进程锁、sleep/wakeup 与学号策略步长调度 | [`doc/lab4/`](doc/lab4/) |
-| Lab5–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
+| Lab5 | 完成COW fork、引用计数、pmc与exec参数栈，并通过官方及错误路径实测 | [`doc/lab5/`](doc/lab5/) |
+| Lab6–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
 
 每个实验目录包含一个精简索引 README、`images/` 图片目录和 `docs/` 中文主报告。教师可从对应的 `doc/labN/README.md` 进入主报告；PNG 是展示图，需要编辑时可使用同目录的 Mermaid 源文件。说明书要求映射集中保存在 [`course-config/`](course-config/)。
 
@@ -40,6 +41,8 @@ python3 code/support/inject_uart.py --tree code --script code/support/lab2-overf
 python3 code/support/inject_uart.py --tree code --script code/support/lab2-spin.script
 # Lab3 官方用户路径：启动后在 sh> 输入 badaccess、memcap
 python3 code/support/inject_uart.py --tree code --script code/support/lab3-smoke.script
+python3 code/tests/verify_lab4_qemu.py
+python3 code/tests/verify_lab5_qemu.py
 ```
 
 Lab1 的真实 QEMU 截图、启动图及中文报告位于 [`doc/lab1/`](doc/lab1/)。
@@ -91,6 +94,8 @@ git ls-remote origin refs/heads/main refs/tags/lab3-start^{} refs/tags/lab3^{} r
 ```
 
 Lab4 使用 `lab4-start`（Lab3 回归基线）、`lab4`、`lab4-submit` 三个标签。提交前执行真实构建、官方 `bench`、`stride_test`、自编交错输出测试及 Lab0–Lab3 回归；报告区分静态检查与 QEMU 实测。代码增量包为 `code/archives/lab4-code-delta-2024302111427.zip`，提交归档为 `提交-lab4-2024302111427.zip`，ZIP 不提交到源码仓库。
+
+Lab5 使用 `lab5-start`、`lab5`、`lab5-submit`。主报告为 [Lab5中文报告](doc/lab5/docs/lab5-experiment-report.md)，先期设计及V3要求对照在 [course-config/](course-config/)。完整归档 `提交-lab5-2024302111427.zip`，代码增量 `code/archives/lab5-code-delta-2024302111427.zip`，ZIP不入Git。
 
 ## 课程说明
 

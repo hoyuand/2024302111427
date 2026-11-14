@@ -14,3 +14,7 @@
 * `lab4-sources.sha256`：Lab4 输入说明书和增量包的字节数与 SHA-256。
 
 内核编译时使用的 `course_sid.h` 仍位于 [`code/kernel/`](../code/kernel/)，以保持课程骨架的编译接口不变。
+
+* `lab5-v3-requirements.md`：Lab5 V3/v2 COW、引用计数与exec参数要求对照；
+* `lab5-design-notes.md`：实现前数据结构、不变式、三态快照、锁序及回滚设计；
+* `lab5-sources.sha256`、`lab5-course-files.sha256`：输入附件及原样合入预置文件的SHA-256。

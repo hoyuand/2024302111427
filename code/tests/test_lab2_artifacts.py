@@ -28,7 +28,7 @@ class Lab2ArtifactsTest(unittest.TestCase):
             "tests/bufstorm.c": "4297a01da3ca03ff8673f5d4a686e55ad9c1b3264135703fbcb3b72d1e2bb5a4",
             "user/hi.c": "10f3fbc0b6baf730a34cee74c2db87b654c13259f84681f144bb2093d061b8bd",
             "user/printf.c": "8c98780668f6418103de788fa8f2c2d16ed419de95a4484e20fe9531194ccbca",
-            "user/sh.c": "112a764f79d690b0d1a013c25c184e93df075b2b8c6bdc8f582b61c273692661",
+            # Lab5 supersedes sh.c; latest exact gift checked in test_lab5_artifacts.py.
             "user/spin.c": "dcf1b6e196705428c18b1a7ad63e3d8f8ea2422974fc15bc5e1dbc65c380bbf5",
             "user/ulib.c": "0bb30cebbd735f730e335e807742e0d20ddf5779d534714f558a606aac2d7a4b",
             # Superseded by the Lab4 user ABI header.
@@ -51,7 +51,7 @@ class Lab2ArtifactsTest(unittest.TestCase):
         self.assertRegex(syscall, r"default:\s*return \(uint64\)-1;")
         self.assertIn("argint", syscall)
         self.assertIn("argaddr", syscall)
-        self.assertIn("argstr", syscall)
+        self.assertIn("copyinstr", syscall)
 
         makefile = (CODE / "Makefile").read_text(encoding="utf-8")
         self.assertIn("-mno-relax", makefile)
