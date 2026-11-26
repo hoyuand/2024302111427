@@ -159,6 +159,8 @@ kvminit(void)
            PTE_R | PTE_W);
   mappages(kernel_pagetable, PLIC, 0x400000, PLIC, PTE_R | PTE_W);
   mappages(kernel_pagetable, UART0, 0x100, UART0, PTE_R | PTE_W);
+  mappages(kernel_pagetable,0x10001000,PGSIZE,0x10001000,PTE_R|PTE_W);
+  mappages(kernel_pagetable,0x100000,PGSIZE,0x100000,PTE_R|PTE_W);
   uint64 tramp_pa = PGROUNDDOWN((uint64)trampoline);
   mappages(kernel_pagetable, TRAMPOLINE, PGSIZE, tramp_pa, PTE_R | PTE_X);
   kernel_satp = MAKE_SATP(kernel_pagetable);

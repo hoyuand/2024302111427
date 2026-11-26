@@ -22,7 +22,8 @@ GitHub 仓库：<https://github.com/hoyuand/2024302111427>（克隆地址：`htt
 | Lab3 | 完成位图物理页分配器、SV39 页表、用户地址空间、copyin/copyout、sbrk、fork/exec 与 OOM/越界测试 | [`doc/lab3/`](doc/lab3/) |
 | Lab4 | 完成内核上下文切换、每进程锁、sleep/wakeup 与学号策略步长调度 | [`doc/lab4/`](doc/lab4/) |
 | Lab5 | 完成COW fork、引用计数、pmc与exec参数栈，并通过官方及错误路径实测 | [`doc/lab5/`](doc/lab5/) |
-| Lab6–Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
+| Lab6 | 完成磁盘ELF加载、LFU缓存、WAL与六阶段恢复 | [Lab6验收材料](doc/lab6/README.md) |
+| Lab7 | 待后续实验完成后追加 | 对应的 `doc/labN/` |
 
 每个实验目录包含一个精简索引 README、`images/` 图片目录和 `docs/` 中文主报告。教师可从对应的 `doc/labN/README.md` 进入主报告；PNG 是展示图，需要编辑时可使用同目录的 Mermaid 源文件。说明书要求映射集中保存在 [`course-config/`](course-config/)。
 
@@ -100,3 +101,5 @@ Lab5 使用 `lab5-start`、`lab5`、`lab5-submit`。主报告为 [Lab5中文报�
 ## 课程说明
 
 本人参加了 2026 年全国大学生计算机系统能力大赛操作系统设计赛 OS 内核实现赛道，晋级全国总决赛并获优胜奖。经与任课老师沟通，后续 Lab 实验可免去验证环节，并按验收通过计入实验成绩。
+
+Lab6：[中文主报告](doc/lab6/docs/lab6-experiment-report.md)、[V3要求对照](course-config/lab6-v3-requirements.md)。`python3 code/tests/verify_lab6_qemu.py` 使用临时磁盘副本完成文件及六阶段复位测试；`make -C code clean && make -C code -j2` 同时构建内核和真实fs.img。缓存/日志自测先执行 `make -C code clean && make -C code EXTRA_CFLAGS=-DLAB6_SELFTEST`，再运行 `python3 code/tests/verify_lab6_qemu.py --selftests`。最后清理重建普通版。

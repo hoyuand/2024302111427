@@ -11,7 +11,7 @@
 /* The scheduler uses a deliberately small xv6-style spin lock.  Lab4 is
  * delivered and graded with one hart, but interrupt exclusion is still
  * required: a timer/UART interrupt must never observe a half transition. */
-struct spinlock { volatile uint locked; };
+#include "spinlock.h"
 typedef struct spinlock spinlock_t;
 
 struct context {
@@ -74,6 +74,8 @@ enum procstate { UNUSED, USED, RUNNABLE, RUNNING, SLEEPING, ZOMBIE };
 
 struct proc {
   spinlock_t lock;
+  struct file *ofile[NOFILE];
+  struct inode *cwd;
   int pid;
   enum procstate state;
   struct proc *parent;

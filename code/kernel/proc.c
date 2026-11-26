@@ -1,3 +1,8 @@
+#include "defs.h"
+#include "fs.h"
+#include "sleeplock.h"
+#include "file.h"
+#include "elf.h"
 #include "types.h"
 #include "riscv.h"
 #include "memlayout.h"
@@ -6,7 +11,7 @@
 #include "proc.h"
 
 extern void printf(const char *fmt, ...);
-extern uchar _uprog_table[];
+
 extern uint64 kvmsatp(void);
 extern void trampoline(void);
 
@@ -71,28 +76,6 @@ static void copy_name(char *dst, const char *src)
     dst[i] = src[i], i++;
   dst[i] = 0;
 }
-static int lookup_program(const char *name, const uchar **start,
-                          const uchar **file_end, const uchar **mem_end,
-                          const uchar **code_end)
-{
-  uchar *cursor = _uprog_table;
-  while (1) {
-    uint64 begin = *(uint64 *)(cursor + 0);
-    uint64 finish = *(uint64 *)(cursor + 8);
-    uint64 mem_end_va = *(uint64 *)(cursor + 16);
-    uint64 code_end_abs = *(uint64 *)(cursor + 24);
-    if (begin == 0 && finish == 0) return -1;
-    const char *entry_name = (const char *)(cursor + 32);
-    if (kstrcmp(entry_name, name) == 0) {
-      *start = (const uchar *)begin;
-      *file_end = (const uchar *)finish;
-      *mem_end = (const uchar *)mem_end_va;
-      *code_end = (const uchar *)code_end_abs;
-      return 0;
-    }
-    cursor += (32 + kstrlen(entry_name) + 1 + 7) & ~7U;
-  }
-}
 static void reset_context(struct proc *p)
 {
   for (uint i = 0; i < sizeof(p->tf); i++) ((uchar *)&p->tf)[i] = 0;
@@ -111,43 +94,30 @@ static int map_trapframe(pagetable_t pt, struct proc *p)
   *pte = PA2PTE(&p->tf) | PTE_V | PTE_R | PTE_W;
   return 0;
 }
-static int load_program(struct proc *p, const char *name, pagetable_t *outpt,
-                        uint *outmemsz, uint *outbrk, uint64 *outstack_top)
+static uint64 loaded_entry;
+static int load_program(struct proc *p,const char *name,pagetable_t *outpt,uint *outmemsz,uint *outbrk,uint64 *outstack_top)
 {
-  const uchar *start, *file_end, *mem_end_ptr, *code_end_ptr;
-  if (lookup_program(name, &start, &file_end, &mem_end_ptr, &code_end_ptr) < 0) return -1;
-  uint64 file_length = (uint64)(file_end - start);
-  uint64 mem_length = (uint64)(mem_end_ptr - start);
-  uint64 code_end = (uint64)(code_end_ptr - start);
-  if (file_length == 0 || mem_length < file_length || mem_length > 64 * 1024 || code_end > file_length) return -1;
-  pagetable_t pt = uvmcreate(p);
-  if (!pt) { printf("lab3: uvmcreate fail free=%d\n", kfreecount()); return -1; }
-  uint64 data_end = PGROUNDUP(mem_length);
-  uint64 stack_start = data_end + (uint64)LAB3_GUARD_PAGES * PGSIZE;
-  uint64 stack_top = stack_start + (uint64)USERSTACK * PGSIZE;
-  if (stack_top >= TRAPFRAME) { uvmfree(pt, 0); return -1; }
-  for (uint64 va = 0; va < data_end; va += PGSIZE) {
-    void *mem = kalloc();
-    if (!mem) goto bad;
-    uint64 remain = file_length > va ? file_length - va : 0;
-    uint n = remain > PGSIZE ? PGSIZE : (uint)remain;
-    for (uint i = 0; i < PGSIZE; i++) ((uchar *)mem)[i] = i < n ? start[va + i] : 0;
-    int perm = va < code_end ? PTE_R | PTE_X : PTE_R | PTE_W;
-    if (uvmmap(pt, va, (uint64)mem, PGSIZE, perm) < 0) { printf("lab3: uvmmap fail va=%lx\n", va); kfree(mem); goto bad; }
+  pagetable_t pt=0;struct inode *ip=0;struct elfhdr elf;struct proghdr ph;uint64 sz=0;
+  begin_op();ip=namei((char*)name);if(!ip){end_op();return -1;}ilock(ip);
+  if(readi(ip,0,(uint64)&elf,0,sizeof(elf))!=sizeof(elf) || elf.magic!=ELF_MAGIC || elf.phnum>32 || elf.phentsize!=sizeof(ph))goto bad;
+  pt=uvmcreate(p);if(!pt)goto bad;
+  for(int i=0;i<elf.phnum;i++){
+    uint64 off=elf.phoff+(uint64)i*sizeof(ph);
+    if(off>ip->size || sizeof(ph)>ip->size-off || readi(ip,0,(uint64)&ph,off,sizeof(ph))!=sizeof(ph))goto bad;
+    if(ph.type!=ELF_PROG_LOAD)continue;
+    if(ph.memsz<ph.filesz || ph.vaddr%PGSIZE || ph.vaddr<sz || ph.vaddr+ph.memsz<ph.vaddr || ph.vaddr+ph.memsz>16*1024*1024 || ph.off>ip->size || ph.filesz>ip->size-ph.off)goto bad;
+    int perm=((ph.flags&4)?PTE_R:0)|((ph.flags&2)?PTE_W:0)|((ph.flags&1)?PTE_X:0);
+    if(!(perm&PTE_R) || ((perm&PTE_W)&&(perm&PTE_X)))goto bad;
+    if(uvmalloc(pt,sz,ph.vaddr+ph.memsz,perm)<0)goto bad;
+    sz=ph.vaddr+ph.memsz;
+    for(uint64 n=0;n<ph.filesz;){uint64 pa=walkaddr(pt,ph.vaddr+n,0);uint count=ph.filesz-n>PGSIZE?PGSIZE:ph.filesz-n;if(!pa || readi(ip,0,pa,ph.off+n,count)!=count)goto bad;n+=count;}
   }
-  void *stack = kalloc();
-  if (!stack || uvmmap(pt, stack_start, (uint64)stack, PGSIZE, PTE_R | PTE_W) < 0) {
-    printf("lab3: stack map fail stack=%lx\n", stack_start);
-    if (stack) kfree(stack);
-    goto bad;
-  }
-  if (map_trapframe(pt, p) < 0) { printf("lab3: trapframe map fail\n"); goto bad; }
-  *outpt = pt; *outmemsz = (uint)data_end; *outbrk = (uint)stack_top;
-  *outstack_top = stack_top;
-  return 0;
-bad:
-  uvmfree(pt, 0);
-  return -1;
+  pte_t *entry=vm_walk(pt,elf.entry,0);if(!entry || !(*entry&PTE_X) || !(*entry&PTE_U))goto bad;
+  iunlockput(ip);end_op();ip=0;
+  uint64 data_end=PGROUNDUP(sz),stack_start=data_end+LAB3_GUARD_PAGES*PGSIZE;
+  if(uvmalloc(pt,stack_start,stack_start+PGSIZE,PTE_R|PTE_W)<0 || map_trapframe(pt,p)<0)goto bad;
+  *outpt=pt;*outmemsz=data_end;*outbrk=stack_start+PGSIZE;*outstack_top=*outbrk;loaded_entry=elf.entry;return 0;
+ bad: if(pt)uvmfree(pt,0);if(ip){iunlockput(ip);end_op();}return -1;
 }
 static int default_tickets(const char *name)
 {
@@ -173,6 +143,24 @@ static void forkret(void)
   struct proc *p = current_proc;
     /* scheduler held p->lock across swtch for this first activation. */
   release(&p->lock);
+  intr_on();
+  static int first=1;
+  if(first){first=0;
+#ifdef LAB6_SELFTEST
+    bio_selftest();
+#endif
+    fsinit(ROOTDEV);
+#ifdef LAB6_SELFTEST
+    log_selftest();
+#endif
+    p->cwd=namei("/");
+    struct file *in=filealloc(),*out=filealloc();if(!in || !out)panic("console files");
+    in->type=FD_DEVICE;in->major=CONSOLE;in->readable=1;in->writable=0;
+    out->type=FD_DEVICE;out->major=CONSOLE;out->readable=0;out->writable=1;
+    p->ofile[0]=in;p->ofile[1]=out;p->ofile[2]=filedup(out);
+    if(proc_exec("/sh",0,0)<0)panic("disk sh exec");
+    printf("LAB6 disk ELF /sh loaded\n");dump_pagetable(p->pagetable);
+  }
   usertrapret();
 }
 
@@ -233,7 +221,7 @@ void procinit(void)
   p->pid = 1; p->state = USED; p->parent = 0;
   p->tickets = default_tickets("sh"); p->stride = 1000 / p->tickets; if (!p->stride) p->stride = 1;
   current_proc = p;
-  if (proc_exec("sh", 0, 0) < 0) { printf("lab4: embedded sh missing or memory exhausted\n"); for (;;) asm volatile("wfi"); }
+  p->context.ra=(uint64)forkret; p->context.sp=(uint64)(p->kstack+KSTACK_SIZE);
   p->state = RUNNABLE;
 }
 void proc_map_trapframe(void)
@@ -269,6 +257,7 @@ int proc_exec(const char *name, int argc, const char *const argv[])
   pagetable_t oldpt = p->pagetable; p->pagetable = newpt; p->memsz = newmemsz;
   p->brk = newbrk; p->sz = newbrk; p->stack_top = newstack_top; copy_name(p->name, name);
   reset_context(p);
+  p->tf.epc=loaded_entry;
   p->tf.sp = sp; p->tf.a1 = sp; p->tf.a0 = argc;
   p->cow_copies = 0;
   if (p->context.ra == 0) {
@@ -300,6 +289,8 @@ int proc_fork(void)
   if (map_trapframe(child->pagetable, child) < 0) {
     uvmfree(child->pagetable, 0); child->pagetable = 0; child->state = UNUSED; return -1;
   }
+  for(int fd=0;fd<NOFILE;fd++)child->ofile[fd]=parent->ofile[fd]?filedup(parent->ofile[fd]):0;
+  child->cwd=parent->cwd?idup(parent->cwd):0;
   child->cow_copies = 0;
   child->pid = next_pid++; child->state = RUNNABLE; child->parent = parent; child->exit_status = 0;
   child->memsz = parent->memsz; child->brk = parent->brk; child->sz = parent->sz;
@@ -342,6 +333,8 @@ void proc_exit(int status)
 {
   struct proc *p = current_proc;
   if (!p || !p->parent) for (;;) asm volatile("wfi");
+  for(int fd=0;fd<NOFILE;fd++)if(p->ofile[fd]){fileclose(p->ofile[fd]);p->ofile[fd]=0;}
+  begin_op();if(p->cwd)iput(p->cwd);p->cwd=0;end_op();
   acquire(&wait_lock);
   /* Reparent orphans to sh; its next wait reaps them. */
   for (int i = 1; i < NPROC; i++)
@@ -356,7 +349,7 @@ void proc_exit(int status)
   for (;;) asm volatile("wfi");
 }
 int proc_getpid(void) { return current_proc ? current_proc->pid : -1; }
-void proc_start(void) { dump_pagetable(current_proc->pagetable); scheduler(); }
+void proc_start(void) { scheduler(); }
 
 void proc_yield(void)
 {

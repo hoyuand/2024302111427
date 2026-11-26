@@ -1,4 +1,18 @@
 #include "types.h"
+extern uint64 sys_open(void);
+extern uint64 sys_close(void);
+extern uint64 sys_fstat(void);
+extern uint64 sys_dup(void);
+extern uint64 sys_link(void);
+extern uint64 sys_unlink(void);
+extern uint64 sys_mkdir(void);
+extern uint64 sys_chdir(void);
+extern uint64 sys_mknod(void);
+extern uint64 sys_crash_at(void);
+extern uint64 sys_read(void);
+extern uint64 sys_write(void);
+#include "defs.h"
+#include "types.h"
 #include "riscv.h"
 #include "proc.h"
 #include "memlayout.h"
@@ -8,7 +22,7 @@
 #include "lab5.h"
 
 static int
-argint(struct trapframe *tf, int n, int *value)
+tf_argint(struct trapframe *tf, int n, int *value)
 {
   if (n < 0 || n > 2)
     return -1;
@@ -17,50 +31,12 @@ argint(struct trapframe *tf, int n, int *value)
 }
 
 static int
-argaddr(struct trapframe *tf, int n, uint64 *value)
+tf_argaddr(struct trapframe *tf, int n, uint64 *value)
 {
   if (n < 0 || n > 2)
     return -1;
   *value = n == 0 ? tf->a0 : n == 1 ? tf->a1 : tf->a2;
   return 0;
-}
-
-static int
-sys_read(struct trapframe *tf)
-{
-  int fd, n;
-  uint64 addr;
-  if (argint(tf, 0, &fd) < 0 || argaddr(tf, 1, &addr) < 0 ||
-      argint(tf, 2, &n) < 0 || fd != 0 || n < 0)
-    return -1;
-  if (n == 0)
-    return 0;
-
-  if (uvm_check_range(current_proc->pagetable, addr, (uint)n, PTE_R | PTE_W) < 0) return -1;
-  consoleintr();
-  char tmp[128];
-  int got = console_read(tmp, n > (int)sizeof(tmp) ? (int)sizeof(tmp) : n);
-  if (got > 0 && copyout(current_proc->pagetable, addr, tmp, got) < 0)
-    return -1;
-  return got;
-}
-
-static int
-sys_write(struct trapframe *tf)
-{
-  int fd, n;
-  uint64 addr;
-  if (argint(tf, 0, &fd) < 0 || argaddr(tf, 1, &addr) < 0 ||
-      argint(tf, 2, &n) < 0 || (fd != 1 && fd != 2) || n < 0)
-    return -1;
-  for (int i = 0; i < n; i++) {
-    consoleintr();
-    char c;
-    if (copyin(current_proc->pagetable, &c, addr + (uint)i, 1) < 0)
-      return -1;
-    console_raw_putc(c);
-  }
-  return n;
 }
 
 static int
@@ -70,7 +46,7 @@ sys_exec(struct trapframe *tf)
   uint64 uargv;
   struct proc *p = current_proc;
   if (copyinstr(p->pagetable, name, tf->a0, sizeof(name)) < 0 ||
-      argaddr(tf, 1, &uargv) < 0) return -1;
+      tf_argaddr(tf, 1, &uargv) < 0) return -1;
   char *buf = kalloc();
   if (!buf) return -1;
   const char *argv[MAXARG];
@@ -99,7 +75,7 @@ static uint64
 sys_sbrk(struct trapframe *tf)
 {
   int delta, policy;
-  if (argint(tf, 0, &delta) < 0 || argint(tf, 1, &policy) < 0)
+  if (tf_argint(tf, 0, &delta) < 0 || tf_argint(tf, 1, &policy) < 0)
     return (uint64)-1;
   struct proc *p = current_proc;
   uint64 old = p->brk;
@@ -125,19 +101,29 @@ syscall_dispatch(struct trapframe *tf)
   case SYS_fork: return proc_fork();
   case SYS_exit: {
     int status;
-    if (argint(tf, 0, &status) < 0)
+    if (tf_argint(tf, 0, &status) < 0)
       status = -1;
     proc_exit(status);
   }
   case SYS_wait: {
     uint64 addr;
-    if (argaddr(tf, 0, &addr) < 0)
+    if (tf_argaddr(tf, 0, &addr) < 0)
       return (uint64)-1;
     return proc_wait(addr);
   }
-  case SYS_read: return sys_read(tf);
-  case SYS_write: return sys_write(tf);
+  case SYS_read: return sys_read();
+  case SYS_write: return sys_write();
   case SYS_exec: return sys_exec(tf);
+  case SYS_open: return sys_open();
+  case SYS_close: return sys_close();
+  case SYS_fstat: return sys_fstat();
+  case SYS_dup: return sys_dup();
+  case SYS_link: return sys_link();
+  case SYS_unlink: return sys_unlink();
+  case SYS_mkdir: return sys_mkdir();
+  case SYS_chdir: return sys_chdir();
+  case SYS_mknod: return sys_mknod();
+  case SYS_crash_at: return sys_crash_at();
   case SYS_getpid: return proc_getpid();
   case SYS_sbrk: return sys_sbrk(tf);
   case SYS_pmc:

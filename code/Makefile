@@ -1,8 +1,8 @@
-# lab2 build: kernel plus flat user images embedded through userimg.S.
+# Lab6: kernel plus disk filesystem containing stripped user ELF images.
 CC   = riscv64-unknown-elf-gcc
 LD   = riscv64-unknown-elf-ld
 OBJCOPY ?= riscv64-unknown-elf-objcopy
-CFLAGS = -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding \
+CFLAGS = $(EXTRA_CFLAGS) -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding \
          -nostdlib -fno-common -ggdb -march=rv64gc -fno-stack-protector -fno-pie
 QEMU = qemu-system-riscv64
 
@@ -10,18 +10,23 @@ QEMU = qemu-system-riscv64
 
 OBJS = kernel/entry.o kernel/start.o kernel/console.o kernel/printf.o \
        kernel/main.o kernel/proc.o kernel/swtch.o kernel/syscall.o kernel/trap.o kernel/vm.o \
-       kernel/trampoline.o kernel/trampoline_anchor.o kernel/userimg.o kernel/kalloc.o
+       kernel/trampoline.o kernel/trampoline_anchor.o kernel/bio.o kernel/log.o kernel/fs.o kernel/file.o kernel/sysfile.o kernel/sleeplock.o kernel/virtio_disk.o kernel/crash.o kernel/fs_adapter.o kernel/kalloc.o
 
 UPROGS = sh hi spin badecall bufstorm badaccess memcap alt lab4check policychange bench lottery_test stride_test
 UPROGS += zerocopy cowpair echo cowtest cowoom vmtest
+UPROGS += fsstress cat crashtest fstest
 UFLAGS = -Wall -Werror -O -std=gnu99 -mcmodel=medany -ffreestanding \
          -nostdlib -fno-common -ggdb -march=rv64gc \
          -fno-stack-protector -fno-pie -mno-relax -DSID=2024302111427 -I.
 
+all: kernel/kernel fs.img
+
+.DEFAULT_GOAL := all
+
 kernel/kernel: $(OBJS) kernel/kernel.ld kernel/lab3.ld
 	$(LD) -T kernel/lab3.ld -o $@ $(OBJS)
 
-%.o: %.c kernel/riscv.h kernel/course_sid.h kernel/proc.h kernel/vm.h kernel/lab5.h
+%.o: %.c kernel/riscv.h kernel/course_sid.h kernel/proc.h kernel/vm.h kernel/lab5.h kernel/defs.h kernel/fs.h kernel/buf.h kernel/spinlock.h
 	$(CC) $(CFLAGS) -Ikernel -c -o $@ $<
 
 %.o: %.S
@@ -59,20 +64,30 @@ user-flat/%.bin: user/%.c user/user.h user/user-lab3.ld $(USER_LIB_OBJS)
 	    user-flat/$*.o $(USER_LIB_OBJS)
 	$(OBJCOPY) -O binary user-flat/$*.elf $@
 
-kernel/userimg.S: Makefile $(addprefix user-flat/,$(UPROGS:=.bin))
-	printf '.section .rodata\n .global _uprog_table\n_uprog_table:\n' > $@.tmp
-	for p in $(UPROGS); do \
-	  code_end=$$(riscv64-unknown-elf-nm user-flat/$$p.elf | awk '$$3 == "__lab3_code_end" {print $$1}'); \
-	  mem_end=$$(riscv64-unknown-elf-nm user-flat/$$p.elf | awk '$$3 == "end" {print $$1}'); \
-	  printf ' .quad _uprog_%s_start\n .quad _uprog_%s_end\n .quad _uprog_%s_start + 0x%s\n .quad _uprog_%s_start + 0x%s\n .asciz "%s"\n .balign 8\n' \
-	    $$p $$p $$p $$mem_end $$p $$code_end $$p >> $@.tmp; \
-	done
-	printf ' .quad 0\n .quad 0\n .quad 0\n .quad 0\n' >> $@.tmp
-	for p in $(UPROGS); do \
-	  printf ' .global _uprog_%s_start\n_uprog_%s_start:\n .incbin "user-flat/%s.bin"\n .global _uprog_%s_end\n_uprog_%s_end:\n .balign 8\n' \
-	    $$p $$p $$p $$p $$p >> $@.tmp; \
-	done
-	mv $@.tmp $@
+HOSTCC ?= cc
+
+QEMUOPTS_FS = -global virtio-mmio.force-legacy=false \
+              -drive file=fs.img,if=none,format=raw,id=x0 \
+              -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
+QEMU += $(QEMUOPTS_FS)
+
+# 保留中间产物 user-flat/%.bin，防止先执行 make fs.img 时被 GNU Make 自动清理
+.PRECIOUS: user-flat/%.bin
+
+# 从 user-flat/%.elf 剥离调试段生成精简 ELF 可执行文件 user/_%（匹配 mkfs 的 "user/_name" 规则）
+user/_%: user-flat/%.bin
+	$(OBJCOPY) -S user-flat/$*.elf $@
+
+mkfs/mkfs: mkfs/mkfs.c kernel/fs.h kernel/param.h kernel/types.h kernel/stat.h kernel/course_sid.h
+	mkdir -p mkfs
+	$(HOSTCC) -Wall -Werror -I. -o mkfs/mkfs mkfs/mkfs.c
+
+fs.img: mkfs/mkfs $(patsubst %,user/_%,$(UPROGS))
+	./mkfs/mkfs fs.img $(patsubst %,user/_%,$(UPROGS))
+
+fsimg: fs.img
+
+qemu: fs.img
 
 # 验收环境固定(排雷环节禁止改动本行以下内容)
 qemu: kernel/kernel
@@ -81,3 +96,4 @@ qemu: kernel/kernel
 clean:
 	rm -f kernel/*.o kernel/kernel user/usys.S
 	rm -rf user-flat
+	rm -f user/_* mkfs/mkfs fs.img

@@ -40,7 +40,7 @@ def main():
     args.log.parent.mkdir(parents=True, exist_ok=True)
     proc = subprocess.Popen(
         [args.qemu, "-machine", "virt", "-bios", "none", "-kernel",
-         "kernel/kernel", "-m", "128M", "-smp", "1", "-nographic"],
+         "kernel/kernel", "-m", "128M", "-smp", "1", "-nographic", "-global", "virtio-mmio.force-legacy=false", "-drive", "file=fs.img,if=none,format=raw,id=x0", "-device", "virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0"],
         cwd=tree, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT, bufsize=0,
     )

@@ -19,3 +19,5 @@
 * [Lab5：COW fork、引用计数与exec参数栈](lab5/) — 主报告：[lab5-experiment-report.md](lab5/docs/lab5-experiment-report.md)
 
 查看顺序：先看该 Lab 的 README 了解文件位置，再阅读唯一主报告；PNG 图和真实终端截图已嵌入报告，源图文件留在 `images/` 供复查和修改。
+
+Lab6：[索引](lab6/README.md)与[中文主报告](lab6/docs/lab6-experiment-report.md)。

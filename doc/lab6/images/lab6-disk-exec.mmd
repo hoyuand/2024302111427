@@ -1,0 +1,6 @@
+flowchart TD
+ A[exec argv] --> B[namei inode readi]
+ B --> C[bread LFU VirtIO fs.img]
+ C --> D[ELF PT_LOAD new page table]
+ D --> E[argv aligned stack]
+ E --> F[commit or rollback]

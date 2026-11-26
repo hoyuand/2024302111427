@@ -16,3 +16,5 @@
 Lab4 官方程序是 `bench`、`stride_test`，自编 `alt`、`lab4check`、`policychange` 分别观察带pause的交错输出、接口边界和改票后的份额变化。主报告见 [`doc/lab4/docs/lab4-experiment-report.md`](../doc/lab4/docs/lab4-experiment-report.md)，自动实测入口为 `python3 code/tests/verify_lab4_qemu.py`。
 
 Lab5增加 kernel/kalloc.c（引用计数分配器）、kernel/lab5.h（扩展声明）、user/sh_input.c（预置Shell换行兼容）。官方zerocopy/cowpair/echo保持增量包字节；自编cowtest/cowoom/vmtest验证边界及真实OOM。实测入口 `python3 code/tests/verify_lab5_qemu.py`，静态检查 `python3 -m unittest discover -s code/tests -p "test_*.py" -v`，主报告 [Lab5实验报告](../doc/lab5/docs/lab5-experiment-report.md)。
+
+Lab6新增bio/log/fs/file/sysfile/sleeplock/fs_adapter及磁盘ELF加载；mkfs/生成fs.img，user/_*为精简ELF，均为忽略的构建产物。tests/verify_lab6_qemu.py以临时镜像进行验收。

@@ -18,7 +18,7 @@ BASE_ARGS = [
 
 def capture(extra_args=()):
     proc = subprocess.Popen(
-        BASE_ARGS + list(extra_args),
+        BASE_ARGS + ["-global", "virtio-mmio.force-legacy=false", "-drive", "file=fs.img,if=none,format=raw,id=x0", "-device", "virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0"] + list(extra_args),
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -54,6 +54,7 @@ def assert_lab1_prefix(output, expected):
         rb"LEAF va=0x[0-9a-f]+ pa=0x[0-9a-f]+ perm=[r-][w-][x-][u-]\n)"
     )
     suffix = re.sub(rb"^KREF-SELFTEST PASS refs=1,3,2,1,0 free=[0-9]+ shared=0\n", b"", suffix)
+    suffix = re.sub(rb"^(?:BIO-SELFTEST[^\n]*\n)?WAL recover header.n=0\n(?:LOG-SELFTEST[^\n]*\n)?LAB6 disk ELF /sh loaded\n", b"", suffix)
     page_dump = rb"DUMP-PAGETABLE begin\n" + row + rb"+DUMP-PAGETABLE end\n(?:sh> )?"
     if not re.fullmatch(page_dump, suffix):
         raise SystemExit(f"unexpected output after Lab1 prefix: {suffix!r}")

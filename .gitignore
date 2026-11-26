@@ -14,3 +14,7 @@ code/archives/*.zip
 .vscode/
 __pycache__/
 *.pyc
+
+code/fs.img
+code/user/_*
+code/mkfs/mkfs

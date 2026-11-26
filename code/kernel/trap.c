@@ -6,6 +6,7 @@
 #include "console.h"
 #include "trap.h"
 #include "lab5.h"
+#include "defs.h"
 
 #define SCAUSE_INTERRUPT (1ULL << 63)
 #define SCAUSE_STIMER    5
@@ -37,6 +38,8 @@ plicinit(void)
   volatile uint32 *priority = (volatile uint32 *)(PLIC_PRIORITY + 4 * UART0_IRQ);
   volatile uint32 *enable = (volatile uint32 *)PLIC_SENABLE(0);
   volatile uint32 *threshold = (volatile uint32 *)PLIC_SPRIORITY(0);
+  *(volatile uint32 *)(PLIC_PRIORITY+4*1)=1;
+  *enable |= 1U << 1;
   *priority = 1;
   *enable |= 1U << UART0_IRQ;
   *threshold = 0;
@@ -63,6 +66,7 @@ devintr(uint64 cause)
     uint32 irq = *claim;
     if (irq == UART0_IRQ)
       consoleintr();
+    else if(irq==1)virtio_disk_intr();
     if (irq != 0)
       *claim = irq;
     return 1;

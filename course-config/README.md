@@ -18,3 +18,5 @@
 * `lab5-v3-requirements.md`：Lab5 V3/v2 COW、引用计数与exec参数要求对照；
 * `lab5-design-notes.md`：实现前数据结构、不变式、三态快照、锁序及回滚设计；
 * `lab5-sources.sha256`、`lab5-course-files.sha256`：输入附件及原样合入预置文件的SHA-256。
+
+Lab6：[设计笔记](lab6-design-notes.md)、[V3对照](lab6-v3-requirements.md)、输入及接口SHA256清单。

@@ -6,6 +6,7 @@
 #include "trap.h"
 #include "lab5.h"
 #include "console.h"
+#include "defs.h"
 
 typedef long int64;
 
@@ -46,6 +47,7 @@ main(void)
   kref_selftest();
   kvminit();
   kvminithart();
+  binit();iinit();fileinit();virtio_disk_init();
   procinit();
   proc_start();
 }

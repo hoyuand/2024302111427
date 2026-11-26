@@ -1,0 +1,5 @@
+flowchart TD
+ A[log_write and bpin] --> B[write_log stage1 and2]
+ B --> C[write_head COMMIT stage3]
+ C --> D[install_trans stage4 and5]
+ D --> E[clear header]
